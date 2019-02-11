@@ -4,7 +4,7 @@ CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g
 LDFLAGS = -Tlink.ld -melf_i386
 AS = as
-ASFLAGS = --32
+ASFLAGS = --32 -gstabs
 
 all : kernel
 
@@ -39,5 +39,5 @@ qemu-dbg : cdrom
 	qemu-system-x86_64 -m 128M -kernel kernel -S -gdb tcp::1234
 
 clean : 
-	rm -rf *.o iso/boot/kernel *.iso kernel kernel_s
+	rm -rf *.o iso/boot/kernel *.iso kernel s_kernel
 
