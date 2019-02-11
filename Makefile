@@ -1,7 +1,7 @@
 CC = gcc
 OBJECTS = system.o loader.o
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-	 -nostartfiles -nodefaultlibs -Wall -Wextra -c
+	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g
 LDFLAGS = -Tlink.ld -melf_i386
 AS = as
 ASFLAGS = --32
@@ -12,7 +12,7 @@ kernel : $(OBJECTS)
 	ld $(LDFLAGS) $(OBJECTS) -o kernel
 
 strip :
-	strip kernel -o kernel.strip
+	strip kernel -o s_kernel
 
 %.o : %.s
 	$(AS) $(ASFLAGS) $< -o $@
@@ -20,7 +20,7 @@ strip :
 %.o : %.c
 	$(CC) $(CFLAGS) $< -o $@
 
-cdrom :
+cdrom : kernel
 	cp kernel iso/boot/kernel
 	genisoimage -R \
 		-b boot/grub/stage2 \
@@ -32,11 +32,12 @@ cdrom :
 		-boot-info-table \
 		-o os.iso \
 		iso 
-qemu :
+qemu : cdrom
 	qemu-system-x86_64 -m 128M -cdrom os.iso
 
-qemu-dbg :
-	qemu-system-x86_64 -m 128M -cdrom os.iso -S -gdb tcp::1234
+qemu-dbg : cdrom
+	qemu-system-x86_64 -m 128M -kernel kernel -S -gdb tcp::1234
+
 clean : 
-	rm -rf *.o kernel
+	rm -rf *.o iso/boot/kernel *.iso kernel kernel_s
 

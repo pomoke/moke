@@ -5,16 +5,29 @@ asmlink int sum(int a,int b,int c)
 	return a+b+c;
 }
 
-asmlink void spin_up(void)
+asmlink void disp_color(char color)
 {
-	char *fb=(char *)0x000B8000;
-	fb[0]='A';
-	fb[1]=0x41;
-	fb[2]='B';
-	fb[3]=0x41;
-	fb[4]='C';
-	fb[5]=0x41;
-	fb[40]='F';
-	fb[41]=0x41;
+	volatile char *fb=(char *)0x000B8000;
+	//clear
+	for (int i=0;i<80*25;i++)
+	{
+		fb[i*2]=' ';
+		fb[i*2+1]=color;
+	}
 	return;
 }
+
+asmlink void spin_up(void)
+{
+	volatile int x;
+	x=0;
+	disp_color(0x41);
+	while (x<100000000)
+		x++;
+	disp_color(0x20);
+	x=0;
+	while (x<100000000)
+		x++;
+	disp_color(0x0);
+}
+

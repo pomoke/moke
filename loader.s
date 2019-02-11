@@ -22,6 +22,7 @@
 	pushl 2
 	movw $0x4128,0x000b8000
 	call sum
+	call spin_up
 
 .loop:
 	jmp .loop
