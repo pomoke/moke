@@ -48,6 +48,6 @@ void print(char * str,u8 fg,u8 bg)
 		}
 		p++;
 	}
-	vga_cursor(pos_x-1,pos_y);
+	vga_cursor(pos_x,pos_y);
 	return;
 }

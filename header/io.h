@@ -1,5 +1,4 @@
 #include "link.h"
-
 static inline void outb(u16 port,u8 val)
 {
 	asm volatile(

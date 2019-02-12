@@ -21,7 +21,7 @@ asmlink void disp_color(u8 color)
 */
 asmlink void spin_up(void)
 {
-	volatile i32 x;
+	volatile i32 x=0;
 	u8 *fb=(u8 *)0xb8000;
 	for (int i=0;i<25*80;i++)
 		fb[2*i]=' ';
@@ -32,7 +32,12 @@ asmlink void spin_up(void)
 	fb[4]='k';
 	fb[6]='e'; */
 	print("MOKE by pomoke,alpha version\n",10,0);
+	while (x<100000000)
+		x++;
+	x=0;
 	print("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\nUt enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\nDuis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n",15,1);
+	while (x<100000000)
+		x++;
 	print("!",0,2);
 	for (;;) ;
 }

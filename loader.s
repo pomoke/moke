@@ -14,18 +14,12 @@
 
 	loader:
 		movl $0xCAFEBABE,%eax
-		movl $(kernel_stack+KERNEL_STACK_SIZE),%esp
+		movl $(kernel_stack+KERNEL_STACK_SIZE),%esp /*set up kernel stack*/
 
-	call spin_up
-	pushl 3
-	pushl 1
-	pushl 2
-	movw $0x4128,0x000b8000
-	call sum
-	call spin_up
+	jmp spin_up
 
-.loop:
-	jmp .loop
+loop:
+	jmp loop
 
 .bss
 	.align 4

@@ -1,10 +1,12 @@
 CC = gcc
-OBJECTS = system.o loader.o
+OBJECTS = system.o loader.o vga.o
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g
 LDFLAGS = -Tlink.ld -melf_i386
 AS = as
 ASFLAGS = --32 -gstabs
+
+.PHONY : clean qemu qemu-dbg
 
 all : kernel
 
@@ -32,10 +34,10 @@ cdrom : kernel
 		-boot-info-table \
 		-o os.iso \
 		iso 
-qemu : cdrom
+qemu : 
 	qemu-system-x86_64 -m 128M -cdrom os.iso
 
-qemu-dbg : cdrom
+qemu-dbg : 
 	qemu-system-x86_64 -m 128M -kernel kernel -S -gdb tcp::1234
 
 clean : 
