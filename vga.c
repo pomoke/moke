@@ -16,7 +16,7 @@ void print(char * str,u8 fg,u8 bg)
 	char *p=str;
 	while (*p)
 	{
-		vga_write(pos_x,pos_y,*p,((fg&0x0f)<<4|(bg&0x0f)));
+		vga_write(pos_x,pos_y,*p,((bg&0x0f)<<4|(fg&0x0f)));
 		pos_x++;
 		if (pos_x>=80)
 		{
