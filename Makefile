@@ -6,7 +6,7 @@ LDFLAGS = -Tlink.ld -melf_i386
 AS = as
 ASFLAGS = --32 -gstabs
 
-.PHONY : clean qemu qemu-dbg
+.PHONY : clean
 
 all : kernel
 
@@ -34,10 +34,10 @@ cdrom : kernel
 		-boot-info-table \
 		-o os.iso \
 		iso 
-qemu : 
+qemu : cdrom
 	qemu-system-x86_64 -m 128M -cdrom os.iso
 
-qemu-dbg : 
+qemu-dbg : cdrom 
 	qemu-system-x86_64 -m 128M -kernel kernel -S -gdb tcp::1234
 
 clean : 
