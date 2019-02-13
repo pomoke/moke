@@ -4,6 +4,7 @@
 
 #define VGA_MMIO_ADDR 0xb8000
 #define VGA_WIDTH 80
+#define VGA_HEIGHT 25
 #define VGA_CMD_PORT 0x3d4
 #define VGA_DATA_PORT 0x3d5
 #define VGA_IO_HIGH 0xe
@@ -26,7 +27,25 @@ void vga_write(u32 x,u32 y,char c,u8 color)
 	return;
 }
 
-void print(char * str,u8 fg,u8 bg)
+void vga_scroll(void)
+{
+	u8 *fb=(u8 *)VGA_MMIO_ADDR;
+	for (int i=0;i<VGA_HEIGHT;i++)
+	{
+		for (int j=0;j<VGA_WIDTH;j++)
+		{
+			fb[2*(VGA_WIDTH*i+j)]=fb[2*(VGA_WIDTH*(i+1)+j)];
+			fb[2*(VGA_WIDTH*i+j)+1]=fb[2*(VGA_WIDTH*(i+1)+j)+1];
+		}
+	}
+	for (int j=0;j<VGA_WIDTH;j++)
+	{
+		fb[2*(VGA_WIDTH*(VGA_HEIGHT-1)+j)]=0;
+		fb[2*(VGA_WIDTH*(VGA_HEIGHT-1)+j)+1]=0;
+	}
+}
+
+void print_vga(char * str,u8 fg,u8 bg)
 {
 	char *p=str;
 	while (*p)
@@ -45,6 +64,12 @@ void print(char * str,u8 fg,u8 bg)
 		{
 			pos_x=0;
 			pos_y++;
+		}
+		if (pos_y>=VGA_HEIGHT)
+		{
+			pos_y=24;
+			pos_x=0;
+			vga_scroll();
 		}
 		p++;
 	}
