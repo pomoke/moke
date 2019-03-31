@@ -11,10 +11,10 @@ ASFLAGS = --32 -gstabs
 all : kernel
 
 kernel : $(OBJECTS)
-	ld $(LDFLAGS) $(OBJECTS) -o kernel
+	ld $(LDFLAGS) $(OBJECTS) -o moke
 
 strip :
-	strip kernel -o s_kernel
+	strip moke -o smoke
 
 %.o : %.s
 	$(AS) $(ASFLAGS) $< -o $@
@@ -34,12 +34,14 @@ cdrom : kernel
 		-boot-info-table \
 		-o os.iso \
 		iso 
-qemu : cdrom
-	qemu-system-x86_64 -m 128M -cdrom os.iso
+qemu : kernel
+	qemu-system-x86_64 -m 128M -kernel moke
 
-qemu-dbg : cdrom 
-	qemu-system-x86_64 -m 128M -kernel kernel -S -gdb tcp::1234
+qemu-dbg : kernel
+	qemu-system-x86_64 -m 128M -kernel moke -S -gdb tcp::1234
+kvm : kernel
+	kvm -m 128M -kernel moke
 
 clean : 
-	rm -rf *.o iso/boot/kernel *.iso kernel s_kernel
+	rm -rf *.o iso/boot/kernel *.iso moke s_moke
 

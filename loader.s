@@ -6,15 +6,14 @@
 
 .text
 	.globl loader
-
 	.align 4
 	.long MAGIC_NUMBER
 	.long FLAGS
 	.long CHECKSUM
 
 	loader:
-		movl $0xCAFEBABE,%eax
 		movl $(kernel_stack+KERNEL_STACK_SIZE),%esp /*set up kernel stack*/
+		movl %eax,(boottype)
 
 	jmp spin_up
 
@@ -23,4 +22,6 @@ loop:
 
 .bss
 	.align 4
-	.lcomm kernel_stack,KERNEL_STACK_SIZE
+	.globl boottype
+	.comm kernel_stack,KERNEL_STACK_SIZE
+	.comm boottype,4

@@ -45,7 +45,7 @@ void vga_scroll(void)
 	}
 }
 
-void print_vga(char * str,u8 fg,u8 bg)
+void kprint_vga(char * str,u8 fg,u8 bg)
 {
 	char *p=str;
 	while (*p)
