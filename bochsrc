@@ -1,0 +1,8 @@
+display_library: x, options="gui_debug"
+megs: 256M
+romimage: file=/usr/share/bochs/BIOS-bochs-latest
+vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
+ata0-master: type=cdrom,path="moke.iso",status=inserted
+boot: cdrom
+mouse: enabled=0
+cpu: count=1,model= core_duo_t2400_yonah
