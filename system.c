@@ -3,6 +3,7 @@
 #include "header/gdt.h"
 #include "header/kprint.h"
 #include "header/mb.h"
+#include "header/intr.h"
 #include "power.h"
 
 extern int boottype;
@@ -47,7 +48,7 @@ void kprint(char *str,i16 target,i16 level)
 	}
 	return;
 }
-
+char conv[]="01234567890abcdef";
 void kprint_n(u32 n,i16 target,i16 level)
 {
 	char s[9];
@@ -55,7 +56,7 @@ void kprint_n(u32 n,i16 target,i16 level)
 	int tmp=n;
 	for (int i=7;i>=0;i--)
 	{
-		s[i]="0123456789abcdef"[tmp%16];
+		s[i]=conv[tmp%16];
 		tmp/=16;
 	}
 	kprint(s,target,level);
@@ -103,12 +104,24 @@ asmlink void spin_up(void)
 	{
 		x++;
 	}
+	kprint("cmdline: ",PR_VGA,INFO);
+	kprint(boot_cmdline(mbinfo),PR_VGA,INFO);
+	kprint('\n',PR_VGA,INFO);
 	show_mmap(mbinfo);
 	*(int*)0x10000000=3;
-	kprint_n(*(int *)0x10000000,PR_VGA,INFO);
+	//kprint_n(*(int *)0x10000000,PR_VGA,INFO);
 	//poweroff_qemu();
 	//asm("hlt");
 	x=0;
+	intr_init();
+	kprint("ISR loaded.\n",PR_VGA,INFO);
+	kprint("Starting interrupts...\n",PR_VGA,INFO);
+	x=0;
+	while (x<400000000)
+		x++;
+	int_start();
+	asm volatile("int $0x80");
+	
 	for (;;) ;
 }
 

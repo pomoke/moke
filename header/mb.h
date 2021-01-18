@@ -3,7 +3,7 @@
 #define BOOTMEM_POWER 4
 #define BOOTMEM_RESV 5
 struct mb_symbol { //A stub only.We have nothing called debugger for now!
-  char a[12];
+  char a[16];
 };
 struct mb_mem{
   ;
@@ -34,6 +34,6 @@ struct multiboot {
   void * apm; //We do not use APM.
   //No bootloader-based framebuffer-setting currently.
 };
-
+char * boot_cmdline(struct multiboot *this);
 void show_mmap(struct multiboot *this);
 
