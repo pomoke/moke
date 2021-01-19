@@ -1,5 +1,5 @@
 CC = gcc
-OBJECTS = system.o loader.o vga.o gdt.o mb.o interrupt.o
+OBJECTS = system.o loader.o vga.o gdt.o mb.o interrupt.o cmos.o clock.o
 CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
 	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -mgeneral-regs-only -mno-red-zone 
 LDFLAGS = -Tlink.ld -melf_i386

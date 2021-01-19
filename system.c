@@ -4,6 +4,7 @@
 #include "header/kprint.h"
 #include "header/mb.h"
 #include "header/intr.h"
+#include "header/clock.h"
 #include "power.h"
 
 extern int boottype;
@@ -106,7 +107,7 @@ asmlink void spin_up(void)
 	}
 	kprint("cmdline: ",PR_VGA,INFO);
 	kprint(boot_cmdline(mbinfo),PR_VGA,INFO);
-	kprint('\n',PR_VGA,INFO);
+	kprint("\n",PR_VGA,INFO);
 	show_mmap(mbinfo);
 	*(int*)0x10000000=3;
 	//kprint_n(*(int *)0x10000000,PR_VGA,INFO);
@@ -119,9 +120,11 @@ asmlink void spin_up(void)
 	x=0;
 	while (x<400000000)
 		x++;
-	int_start();
-	asm volatile("int $0x80");
-	
-	for (;;) ;
+	x=0;
+	//int_start();
+	struct date date;
+	rtc_read(&date);
+	kprint(week[date.weekday-1],PR_VGA,INFO);
+	for (;;);
 }
 

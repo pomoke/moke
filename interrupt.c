@@ -7,6 +7,16 @@
 #define ISR_INTR 0xE
 #define ISR_TRAP 0XF 
 
+/* PIC helpers */
+#define PIC1 0x20
+#define PIC2 0xA0
+#define PIC1_COMM PIC1
+#define PIC1_DATA (PIC1+1)
+#define PIC2_COMM PIC2
+#define PIC2_DATA (PIC2+1)
+
+#define PIC_READ_IRR 0x0a
+#define PIC_READ_ISR 0x0b
 
 /* The IDT table requires the minimum limit of 100h.
  * There are 256 intr's available.
@@ -17,7 +27,6 @@ struct idt_entry {
 } __attribute__((packed));
 
 struct idt_entry idt_entry;
-
 /* IA-32 table */
 struct idt_desc {
 	u16 offset_l;
@@ -48,12 +57,94 @@ void int_ack(void) //PIC version,use this at the end of ISR.
 	outb(0x20,0x20);
 }
 
-__attribute__((interrupt)) void generic_isr(struct interrupt_frame *frame)
+u8 this_int(void) //Only in ISRs.
 {
-	kprint("Interrupt!\n",PR_VGA,INFO);
+	outb(PIC1_COMM,PIC_READ_ISR);
+	return inb(PIC1_COMM);
+}
+
+struct interrupt_frame;
+
+__attribute__((interrupt)) void unknown_isr(struct interrupt_frame *frame)
+{
+	kprint("Interrupt ",PR_VGA,INFO);
+	kprint_n(this_int(),PR_VGA,INFO);
+	kprint("\n",PR_VGA,INFO);
 	int_ack();
 	return;
 }
+
+__attribute__((interrupt)) void unknown_fault(struct interrupt_frame *frame,u32 code)
+{
+	kprint("Unknown Fault.\n",PR_VGA,ERROR);
+	return;
+}
+
+__attribute__((interrupt)) void div_by_zero(struct interrupt_frame *frame)
+{
+	kprint("Divide by zero\n",PR_VGA,ERROR);
+	return ;
+}
+
+__attribute__((interrupt)) void overflow(struct interrupt_frame *frame)
+{
+	kprint("Overflow.\n",PR_VGA,ERROR);
+	return ;
+}
+__attribute__((interrupt)) void bound_check(struct interrupt_frame *frame)
+{
+	kprint("Bound check failed.\n",PR_VGA,ERROR);
+	return ;
+}
+
+__attribute__((interrupt)) void illegal_op(struct interrupt_frame *frame)
+{
+	kprint("Illegal instruction.\n",PR_VGA,ERROR);
+	return ;
+}
+
+__attribute__((interrupt)) void nodev(struct interrupt_frame *frame)
+{
+	kprint("No such device.\n",PR_VGA,ERROR);
+	return ;
+}
+
+__attribute__((interrupt)) void double_fault(struct interrupt_frame *frame,u32 errno)
+{
+	kprint("Double fault occurred!\n",PR_VGA,ERROR);
+	return ;
+}
+__attribute__((interrupt)) void  invalid_seg(struct interrupt_frame *frame,u32 errno)
+{
+	kprint("Attempt to load an invalid segment.\n",PR_VGA,ERROR);
+	return ;
+}
+__attribute__((interrupt)) void gpe(struct interrupt_frame *frame,u32 errno)
+{
+	kprint("General Protection Fault.\n",PR_VGA,ERROR);
+	return ;
+}
+
+void (*faults[])(struct interrupt_frame,u32)=
+{
+	div_by_zero,
+	unknown_isr, //trap,not now.
+	unknown_isr, //Unused
+	unknown_isr, //int 3
+	overflow,
+	bound_check,
+	illegal_op,
+	nodev,
+	double_fault,//With errno
+	unknown_isr, //x87_seg_overflow
+	unknown_fault, //TSS,errno
+	invalid_seg,
+	invalid_seg,
+	gpe, 
+	unknown_fault, //Page fault.No paging for now.
+	unknown_isr //x87 error.
+};
+
 
 void idt_write(struct idt_desc *this,u32 func,u8 type,u8 ring)
 {
@@ -80,9 +171,11 @@ void idt_load(struct idt_entry *entry,struct idt_desc *idt,u32 limit)
 
 void intr_init(void)
 {
-	for (u32 i=0;i<255;i++)
+	for (u32 i=0;i<=0x10;i++)
+		idt_write(IDT+i,faults[i],ISR_INTR,0);
+	for (u32 i=0x11;i<255;i++)
 	{
-		idt_write(IDT+i,generic_isr,ISR_INTR,0);
+		idt_write(IDT+i,unknown_isr,ISR_INTR,0);
 	}
 	idt_load(&idt_entry,IDT,255);
 	kprint_n(&idt_entry,PR_VGA,INFO);
