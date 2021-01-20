@@ -1,7 +1,10 @@
 CC = gcc
-OBJECTS = system.o loader.o vga.o gdt.o mb.o interrupt.o cmos.o clock.o
-CFLAGS = -m32 -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
-	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -mgeneral-regs-only -mno-red-zone 
+SHELL = bash
+OBJECTS = system.o loader.o vga.o gdt.o mb.o interrupt.o cmos.o clock.o kprint.o
+CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
+	 -isystem $(shell $(CC) -print-file-name=include) \
+	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -mno-red-zone \
+	 -mgeneral-regs-only -l header/
 LDFLAGS = -Tlink.ld -melf_i386
 AS = as
 ASFLAGS = --32 -gstabs

@@ -79,7 +79,7 @@ asmlink void spin_up(void)
 	kprint("\n",PR_VGA,INFO);
 	if (boottype!=0x2badb002) 
 	{
-		kprint("Error:not booted by multiboot loader!\nSystem halted.",PR_VGA,ERROR);
+		kprint("Error:not booted by multiboot1 loader!\nSystem halted.",PR_VGA,ERROR);
 		reboot();
 		for (;;) ;
 	}
@@ -125,6 +125,7 @@ asmlink void spin_up(void)
 	struct date date;
 	rtc_read(&date);
 	kprint(week[date.weekday-1],PR_VGA,INFO);
+	printk("hello %d %x!\n",0xFFFFFFFF,32);
 	for (;;);
 }
 

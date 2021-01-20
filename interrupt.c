@@ -18,6 +18,7 @@
 #define PIC_READ_IRR 0x0a
 #define PIC_READ_ISR 0x0b
 
+#define isr __attribute__((interrupt))
 /* The IDT table requires the minimum limit of 100h.
  * There are 256 intr's available.
  */
@@ -65,7 +66,7 @@ u8 this_int(void) //Only in ISRs.
 
 struct interrupt_frame;
 
-__attribute__((interrupt)) void unknown_isr(struct interrupt_frame *frame)
+isr void unknown_isr(struct interrupt_frame *frame)
 {
 	kprint("Interrupt ",PR_VGA,INFO);
 	kprint_n(this_int(),PR_VGA,INFO);
@@ -74,52 +75,52 @@ __attribute__((interrupt)) void unknown_isr(struct interrupt_frame *frame)
 	return;
 }
 
-__attribute__((interrupt)) void unknown_fault(struct interrupt_frame *frame,u32 code)
+isr void unknown_fault(struct interrupt_frame *frame,u32 code)
 {
 	kprint("Unknown Fault.\n",PR_VGA,ERROR);
 	return;
 }
 
-__attribute__((interrupt)) void div_by_zero(struct interrupt_frame *frame)
+isr void div_by_zero(struct interrupt_frame *frame)
 {
 	kprint("Divide by zero\n",PR_VGA,ERROR);
 	return ;
 }
 
-__attribute__((interrupt)) void overflow(struct interrupt_frame *frame)
+isr void overflow(struct interrupt_frame *frame)
 {
 	kprint("Overflow.\n",PR_VGA,ERROR);
 	return ;
 }
-__attribute__((interrupt)) void bound_check(struct interrupt_frame *frame)
+isr void bound_check(struct interrupt_frame *frame)
 {
 	kprint("Bound check failed.\n",PR_VGA,ERROR);
 	return ;
 }
 
-__attribute__((interrupt)) void illegal_op(struct interrupt_frame *frame)
+isr void illegal_op(struct interrupt_frame *frame)
 {
 	kprint("Illegal instruction.\n",PR_VGA,ERROR);
 	return ;
 }
 
-__attribute__((interrupt)) void nodev(struct interrupt_frame *frame)
+isr void nodev(struct interrupt_frame *frame)
 {
 	kprint("No such device.\n",PR_VGA,ERROR);
 	return ;
 }
 
-__attribute__((interrupt)) void double_fault(struct interrupt_frame *frame,u32 errno)
+isr void double_fault(struct interrupt_frame *frame,u32 errno)
 {
 	kprint("Double fault occurred!\n",PR_VGA,ERROR);
 	return ;
 }
-__attribute__((interrupt)) void  invalid_seg(struct interrupt_frame *frame,u32 errno)
+isr void  invalid_seg(struct interrupt_frame *frame,u32 errno)
 {
 	kprint("Attempt to load an invalid segment.\n",PR_VGA,ERROR);
 	return ;
 }
-__attribute__((interrupt)) void gpe(struct interrupt_frame *frame,u32 errno)
+isr void gpe(struct interrupt_frame *frame,u32 errno)
 {
 	kprint("General Protection Fault.\n",PR_VGA,ERROR);
 	return ;
