@@ -6,7 +6,7 @@
 static char pbuf[PRINT_BUF_SIZE];
 void vprintk(char *fmt,va_list args)
 {
-	char *p=fmt,*q=pbuf,*i;
+	char *p=fmt,*q=pbuf,*i,*s;
 	int flag=0;
 	char ibuf[11];
 	u32 tmp;
@@ -39,6 +39,11 @@ void vprintk(char *fmt,va_list args)
 					  //Copy back
 					  for (;i<=ibuf+10;i++)
 						  *q++=*i;
+					  break;
+				case 's':
+					  s=va_arg(args,char *);
+					  while (*s)
+						  *q++=*s++;
 					  break;
 				default:
 					  *q++='%';

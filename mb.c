@@ -10,10 +10,13 @@ struct mb_symbol { //A stub only.We have nothing called debugger for now!
 };
 struct mb_mem {
   u32 size;
-  u64 base;
-  u64 len;
+  u32 base_l;
+  u32 base_h;
+  u32 len_l;
+  u32 len_h;
   u32 type;
 } __attribute__((packed));
+
 struct multiboot {
   int flag;
   //on flag.0
@@ -39,7 +42,7 @@ struct multiboot {
   //On flag.10
   void * apm; //We do not use APM.
   //No bootloader-based framebuffer-setting currently.
-};
+} __attribute__((packed));
 
 char * boot_cmdline(struct multiboot *this)
 {
@@ -54,26 +57,29 @@ void show_mmap(struct multiboot *this)
 	  kprint("No memmap available!\n",PR_VGA,ERROR);
 	  return;
   }
-  kprint("memmap entry ",PR_VGA,INFO);
-  kprint_n(((u32)this->mmap_addr)&0xFFFFFFFF,PR_VGA,INFO);
-  struct mb_mem *p=this->mmap_addr;
-  int count=this->mmap_length;
-  kprint(" items ",PR_VGA,INFO);
-  kprint_n(count,PR_VGA,INFO);
+  //kprint("memmap entry ",PR_VGA,INFO);
+  //kprint_n(((u32)this->mmap_addr)&0xFFFFFFFF,PR_VGA,INFO);
+  struct mb_mem *p=(struct mb_mem *)((void *)this->mmap_addr);
+  /*kprint(" length ",PR_VGA,INFO);
+  kprint_n((u32)this->mmap_addr,PR_VGA,INFO);
   kprint("\n\n",PR_VGA,INFO);
-  kprint_n(count,PR_VGA,INFO);
-  kprint("Memmap:\n",PR_VGA,INFO);
-  for (int i=0;i<count;i++,p=(struct mb_mem *)((u32)p+p->size+sizeof(p->size)))
+  kprint_n(this->mmap_length,PR_VGA,INFO);
+  kprint("Memmap:\n",PR_VGA,INFO);*/
+  printk("mem: entry %x length %d\n",this->mmap_addr,this->mmap_length);
+  for (;(void *)p<(void *)this->mmap_addr+(u32)this->mmap_length;p=(struct mb_mem *)((u32)p + p->size + sizeof(p->size)))
   {
 	  n=0;
 	  while (n<200000000)
 		  n++;
+	/*
       kprint_n(p->base,PR_VGA,INFO);
       kprint(" len ",PR_VGA,INFO);
       kprint_n(p->len,PR_VGA,INFO);
       kprint(" type ",PR_VGA,INFO);
       kprint(type[p->type],PR_VGA,INFO);
       kprint("\n",PR_VGA,INFO);
+      */
+	printk("mem: %x%x len %x%x type %d next %d\n",p->base_h,p->base_l,p->len_h,p->len_l,p->type,p->size);
   }
   return;
 }

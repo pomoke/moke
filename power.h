@@ -21,3 +21,10 @@ void poweroff_qemu()
 		time++;
 	outw(0x604,0x2000);
 }
+
+void halt(void)
+{
+	int_stop();
+	asm volatile("hlt"):
+	return;
+}

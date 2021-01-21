@@ -125,7 +125,8 @@ asmlink void spin_up(void)
 	struct date date;
 	rtc_read(&date);
 	kprint(week[date.weekday-1],PR_VGA,INFO);
-	printk("hello %d %x!\n",0xFFFFFFFF,32);
+	printk("%s %d %x %d!\n","hello,world",0xdeadbeaf,32,64);
+	printk("%d %d %x %x %d %d\n",32,63,32,32,32,54);
 	for (;;);
 }
 
