@@ -1,7 +1,7 @@
 #include "header/type.h"
 #include "header/io.h"
 #include "header/kprint.h"
-
+#include "header/power.h"
 /* We do not use 16-bit mode here and everywhere!*/
 #define ISR_TASK 0x5
 #define ISR_INTR 0xE
@@ -10,13 +10,33 @@
 /* PIC helpers */
 #define PIC1 0x20
 #define PIC2 0xA0
-#define PIC1_COMM PIC1
+#define PIC1_CMD PIC1
 #define PIC1_DATA (PIC1+1)
-#define PIC2_COMM PIC2
+#define PIC2_CMD PIC2
 #define PIC2_DATA (PIC2+1)
 
 #define PIC_READ_IRR 0x0a
 #define PIC_READ_ISR 0x0b
+
+#define ICW1_ICW4 0x01
+#define ICW1_SINGLE 0x02
+#define ICW1_INTERVAL4 0X04
+#define ICW1_LEVEL 0x08
+#define ICW1_INIT 0x10
+
+/* ICW2 : vector offset
+ * ICW3 : M/S wiring
+ * ICW4 : Additional info
+ */
+
+#define ICW4_8086 0x01
+#define ICW4_AUTO 0x02
+#define ICW4_BUF_SLAVE 0x08
+#define ICW4_BUF_MASTER 0x0c
+#define ICW4_SFNM 0x10
+
+#define PIC1_OFFSET 0x20
+#define PIC2_OFFSET 0x28
 
 #define isr __attribute__((interrupt))
 /* The IDT table requires the minimum limit of 100h.
@@ -60,11 +80,15 @@ void int_ack(void) //PIC version,use this at the end of ISR.
 
 u8 this_int(void) //Only in ISRs.
 {
-	outb(PIC1_COMM,PIC_READ_ISR);
-	return inb(PIC1_COMM);
+	outb(PIC1_CMD,PIC_READ_ISR);
+	return inb(PIC1_CMD);
 }
 
-struct interrupt_frame;
+struct interrupt_frame {
+	u32 eip;
+	u32 cs;
+	u32 eflags;
+};
 
 isr void unknown_isr(struct interrupt_frame *frame)
 {
@@ -83,13 +107,15 @@ isr void unknown_fault(struct interrupt_frame *frame,u32 code)
 
 isr void div_by_zero(struct interrupt_frame *frame)
 {
-	kprint("Divide by zero\n",PR_VGA,ERROR);
+	printk("fault: Divide by zero at ip %x.\n",frame->eip);
+	printk("System halted.");
+	halt();
 	return ;
 }
 
 isr void overflow(struct interrupt_frame *frame)
 {
-	kprint("Overflow.\n",PR_VGA,ERROR);
+	kprint("fault: Overflow. at ip %x\n",PR_VGA,ERROR);
 	return ;
 }
 isr void bound_check(struct interrupt_frame *frame)
@@ -100,7 +126,8 @@ isr void bound_check(struct interrupt_frame *frame)
 
 isr void illegal_op(struct interrupt_frame *frame)
 {
-	kprint("Illegal instruction.\n",PR_VGA,ERROR);
+	printk("fault: Illegal instruction at ip %x.\nSystem halted.\n",frame->eip);
+	halt();
 	return ;
 }
 
@@ -179,6 +206,46 @@ void intr_init(void)
 		idt_write(IDT+i,unknown_isr,ISR_INTR,0);
 	}
 	idt_load(&idt_entry,IDT,255);
-	kprint_n(&idt_entry,PR_VGA,INFO);
+	pic_init();	
+	printk("IDT at %x\n",&idt_entry);
 	return;
+}
+
+void set_intr(int n,void (*func)(struct interrupt_frame,u32))
+{
+	idt_write(IDT+n,func,ISR_INTR,0);
+	return ;
+}
+
+void pic_remap(int off1,int off2)
+{
+	u8 a1,a2;
+	a1=inb(PIC1_DATA);
+	a2=inb(PIC2_DATA);
+	outb(PIC1_CMD,ICW1_INIT|ICW1_ICW4);
+	outb(PIC2_CMD,ICW1_INIT|ICW1_ICW4);
+	outb(PIC1_DATA,off1);
+	outb(PIC2_DATA,off2);
+	outb(PIC1_DATA,4);
+	outb(PIC2_DATA,2);
+
+	outb(PIC1_DATA,ICW4_8086);
+	outb(PIC2_DATA,ICW4_8086);
+
+	outb(PIC1_DATA,a1);
+	outb(PIC2_DATA,a2);
+	return;
+}
+
+void pic_init(void)
+{
+	pic_remap(PIC1_OFFSET,PIC2_OFFSET);
+	return;
+}
+
+void pic_disable(void)
+{
+	outb(PIC1_CMD,0xff);
+	outb(PIC2_CMD,0xff);
+	return ;
 }

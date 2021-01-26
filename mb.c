@@ -52,7 +52,7 @@ char *type[]={"?","RAM","?","ACPI","POWER","RESERVE"};
 void show_mmap(struct multiboot *this)
 {
 	volatile int n;
-  if (!(this->flag & 0x20))
+  if (!(this->flag & 0x40))
   {
 	  kprint("No memmap available!\n",PR_VGA,ERROR);
 	  return;

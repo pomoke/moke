@@ -5,7 +5,7 @@
 #include "header/mb.h"
 #include "header/intr.h"
 #include "header/clock.h"
-#include "power.h"
+#include "header/power.h"
 
 extern int boottype;
 asmlink i32 sum(i32 a,i32 b,i32 c)
@@ -121,12 +121,14 @@ asmlink void spin_up(void)
 	while (x<400000000)
 		x++;
 	x=0;
-	//int_start();
+	int_start();
 	struct date date;
 	rtc_read(&date);
 	kprint(week[date.weekday-1],PR_VGA,INFO);
-	printk("%s %d %x %d!\n","hello,world",0xdeadbeaf,32,64);
+	printk("%s %d %x %d! %c","hello,world",0xdeadbeaf,32,64,'\n');
 	printk("%d %d %x %x %d %d\n",32,63,32,32,32,54);
+	panic("Nothing to do.");
+	//x=x/x;
 	for (;;);
 }
 

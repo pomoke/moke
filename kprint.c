@@ -4,10 +4,11 @@
 #include <stdarg.h>
 #define PRINT_BUF_SIZE 512
 static char pbuf[PRINT_BUF_SIZE];
+static int kprint_target;
 void vprintk(char *fmt,va_list args)
 {
 	char *p=fmt,*q=pbuf,*i,*s;
-	int flag=0;
+	int flag=0,c;
 	char ibuf[11];
 	u32 tmp;
 	while (*p)
@@ -44,6 +45,10 @@ void vprintk(char *fmt,va_list args)
 					  s=va_arg(args,char *);
 					  while (*s)
 						  *q++=*s++;
+					  break;
+				case 'c':
+					  c=va_arg(args,int);
+					  *q++=(char)c;
 					  break;
 				default:
 					  *q++='%';

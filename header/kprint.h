@@ -5,6 +5,7 @@
 #define KERN 2
 #define WARN 3
 #define ERROR 4
+static int kprint_target;
 void kprint_vga(char *str,u8 fg,u8 bg);
 void kprint(char *str,i16 target,i16 level);
 void kprint_n(u32 a,i16 target,i16 level);

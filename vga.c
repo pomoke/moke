@@ -1,8 +1,11 @@
 #include "header/type.h"
 #include "header/link.h"
 #include "header/io.h"
-
-#define VGA_MMIO_ADDR 0xb8000
+#ifdef HIGH_KERNEL
+	#define VGA_MMIO_ADDR 0xc00b8000
+#else
+	#define VGA_MMIO_ADDR 0xb8000
+#endif
 #define VGA_WIDTH 80
 #define VGA_HEIGHT 25
 #define VGA_CMD_PORT 0x3d4

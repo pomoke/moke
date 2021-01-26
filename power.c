@@ -1,5 +1,5 @@
-#include "header/io.h"
 #include "header/type.h"
+#include "header/io.h"
 void reboot()
 {
 	//Reboot by 8042 kbd controller
@@ -25,6 +25,7 @@ void poweroff_qemu()
 void halt(void)
 {
 	int_stop();
-	asm volatile("hlt"):
+	//asm volatile("hlt");
+	for (;;) ;
 	return;
 }
