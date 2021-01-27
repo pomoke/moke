@@ -2,6 +2,7 @@
 #include "header/io.h"
 #include "header/kprint.h"
 #include "header/power.h"
+#include <link.h>
 /* We do not use 16-bit mode here and everywhere!*/
 #define ISR_TASK 0x5
 #define ISR_INTR 0xE
@@ -92,9 +93,12 @@ struct interrupt_frame {
 
 isr void unknown_isr(struct interrupt_frame *frame)
 {
-	kprint("Interrupt ",PR_VGA,INFO);
-	kprint_n(this_int(),PR_VGA,INFO);
-	kprint("\n",PR_VGA,INFO);
+	if (this_int()!=1)
+	{
+		kprint("Interrupt ",PR_VGA,INFO);
+		kprint_n(this_int(),PR_VGA,INFO);
+		kprint("\n",PR_VGA,INFO);
+	}
 	int_ack();
 	return;
 }

@@ -6,7 +6,7 @@
 #include "header/intr.h"
 #include "header/clock.h"
 #include "header/power.h"
-
+#include <serial.h>
 extern int boottype;
 asmlink i32 sum(i32 a,i32 b,i32 c)
 {
@@ -127,8 +127,18 @@ asmlink void spin_up(void)
 	kprint(week[date.weekday-1],PR_VGA,INFO);
 	printk("%s %d %x %d! %c","hello,world",0xdeadbeaf,32,64,'\n');
 	printk("%d %d %x %x %d %d\n",32,63,32,32,32,54);
-	panic("Nothing to do.");
+	//panic("Nothing to do.");
+	uart_set_baud(0x3f8,38400);
+	serial_write(0x3f8,'\n');
+	serial_write(0x3f8,'a');
+	serial_write(0x3f8,'b');
+	char a;
 	//x=x/x;
-	for (;;);
+	for (;;)
+	{
+		a=serial_read(0x3f8);
+		printk("%c",a);
+		serial_write(0x3f8,a);
+	}
 }
 
