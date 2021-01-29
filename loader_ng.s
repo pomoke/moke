@@ -75,8 +75,8 @@
 		movl %eax,(0x0) ;//Setup PDs.
 
 		//PTEs begin at 0x1000 to 0x3000.
-		movl $(0x400000+3),%eax ;//End address + (rw kern p)
-		movl $(0x2000),%edi
+		movl $(0x400000-0x1000+3),%eax ;//End address + (rw kern p)
+		movl $(0x2000-4),%edi
 		std
 
 	fill_table:

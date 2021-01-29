@@ -125,7 +125,7 @@ asmlink void spin_up(void)
 	rtc_read(&date);
 	kprint(week[date.weekday-1],PR_VGA,INFO);
 	printk("%s %d %x %d! %c","hello,world",0xdeadbeaf,32,64,'\n');
-	printk("%d %d %x %x %d %d\n",32,63,32,32,32,54);
+	printk("%d %d %x %x %d %d %d\n",32,63,32,32,32,54,*(int *)(0x400000-4));
 	//panic("Nothing to do.");
 	uart_set_baud(0x3f8,38400);
 	serial_write(0x3f8,'\n');
