@@ -57,6 +57,7 @@ void write_gdt(struct gdt_t *this,u32 base,u32 limit,int exist,int ring,int rw,i
 	this->mode	= 1;//32-bit
 	this->unit	= 1;//Page granuarlity
 	this->base_h	= (base & 0xFF000000)>>(24);
+	printk("%x %x\n",*((u32 *)this),*((u32 *)this+1));
 	return;
 }
 extern void * kernel_stack;

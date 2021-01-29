@@ -80,14 +80,13 @@ asmlink void spin_up(void)
 	if (boottype!=0x2badb002) 
 	{
 		kprint("Error:not booted by multiboot1 loader!\nSystem halted.",PR_VGA,ERROR);
-		reboot();
 		for (;;) ;
 	}
 	kprint("Conforming to multiboot standard\n",PR_VGA,KERN);
 	kprint("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n",PR_VGA,WARN);
 	//print("H\n",PR_VGA,WARN);
 	void *gdt_e,*gdt;
-	setup_gdt(&gdt_e,&gdt);
+	//setup_gdt(&gdt_e,&gdt);
 	kprint("GDT at ",PR_VGA,INFO);
 	kprint_n((u32)gdt_e,PR_VGA,INFO);
 	kprint(" ",PR_VGA,INFO);
@@ -98,7 +97,7 @@ asmlink void spin_up(void)
 	{
 		x++;
 	}
-	finilize_gdt();
+	//finilize_gdt();
 	kprint("Loaded GDT.\n",PR_VGA,INFO);
 	x=0;
 	while (x<400000000)
@@ -108,8 +107,8 @@ asmlink void spin_up(void)
 	kprint("cmdline: ",PR_VGA,INFO);
 	kprint(boot_cmdline(mbinfo),PR_VGA,INFO);
 	kprint("\n",PR_VGA,INFO);
-	show_mmap(mbinfo);
-	*(int*)0x10000000=3;
+	//show_mmap(mbinfo);
+	//*(int*)0x10000000=3;
 	//kprint_n(*(int *)0x10000000,PR_VGA,INFO);
 	//poweroff_qemu();
 	//asm("hlt");

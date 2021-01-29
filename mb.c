@@ -82,9 +82,9 @@ void init_mmap(struct multiboot *this)
 	printk("mem: %x%x len %x%x type %d next %d\n",p->base_h,p->base_l,p->len_h,p->len_l,p->type,p->size);
 	if (p->type==1)
 	{
-		mem_area_add(p->base_l,p->len_l);
+		//mem_area_add(p->base_l,p->len_l);
 	}
-	mem_init();
+	//mem_init();
   }
   return;
 }

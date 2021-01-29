@@ -154,9 +154,18 @@ isr void  invalid_seg(struct interrupt_frame *frame,u32 errno)
 isr void gpe(struct interrupt_frame *frame,u32 errno)
 {
 	kprint("General Protection Fault.\n",PR_VGA,ERROR);
+	for (;;);
 	return ;
 }
 
+isr void page_fault(struct interrupt_frame *frame)
+{
+	u32 addr;
+	asm volatile("mov %%cr2,%0":"=a"(addr)::);
+	printk("Page fault at %x access %x.\n",frame->eip,addr);
+	halt();
+	return ;
+}
 void (*faults[])(struct interrupt_frame,u32)=
 {
 	div_by_zero,
@@ -173,7 +182,7 @@ void (*faults[])(struct interrupt_frame,u32)=
 	invalid_seg,
 	invalid_seg,
 	gpe, 
-	unknown_fault, //Page fault.No paging for now.
+	page_fault, //Page fault.No paging for now.
 	unknown_isr //x87 error.
 };
 
