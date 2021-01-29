@@ -1,6 +1,7 @@
 /*
- * This is a type-agnostic double linked table functions.
- * To use this,implent a struct contains `prev` and `next`.
+ * This is a type-generic double linked table functions.
+ * To use this,define a struct contains `prev` and `next`.
+ * The position of prev and next does not matter.
  *
  * struct some_entry {
  * 	struct some_entry *prev;
@@ -21,4 +22,4 @@
 	(a)->next=(item);\
 	(b)->prev=(item);\
 
-
+#define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b->next ;b=b->next )

@@ -34,7 +34,8 @@ void isr serial_handler(struct interrupt_frame *frame);
 
 int uart_set_baud(u32 port,u32 baud)
 {
-	outb(LINE_CTRL(port),0x00); //Stop interrupts
+	printk("Starting serial port...\n");
+	outb(INT(port),0x00); //Stop interrupts
 	u32 divisor=BASE_HZ/baud;
 	outb(LINE_CTRL(port),0x80); //Enable DLAB
 	outb(DIV_L(port),divisor&0xff); //Low byte
@@ -42,13 +43,17 @@ int uart_set_baud(u32 port,u32 baud)
 	outb(LINE_CTRL(port),0x03); //8n1,no parity
 	outb(ID(port),0xc7);
 	outb(MODEM_CTRL(port),0x0b);
-	outb(MODEM_CTRL(port),0xae); //Set lookback
-	outb(port,0xae);
-	if (inb(port)!=0xae)
-		return 1;
+	//outb(MODEM_CTRL(port),0xae); //Set lookback
+	//outb(port,0xae); //Test output
+	//if (inb(port)!=0xae)
+	//	return 1;
 
 	outb(MODEM_CTRL(port),0x0f);
-	//idt_write(IDT+0x20+6,serial_handler,ISR_INTR,0);
+	outb(INT(port),0x1);
+	//check intr id
+	idt_write(IDT+0x20+6,serial_handler,ISR_INTR,0);
+	while(serial_received(port));
+	printk("started serial port at baud %d\n",baud);
 	return 0;
 }
 

@@ -136,9 +136,9 @@ asmlink void spin_up(void)
 	//x=x/x;
 	for (;;)
 	{
-		a=serial_read(0x3f8);
-		printk("%c",a);
-		serial_write(0x3f8,a);
+		//a=serial_read(0x3f8);
+		//printk("%c",a);
+		//serial_write(0x3f8,a);
 	}
 }
 

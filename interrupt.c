@@ -230,8 +230,8 @@ void pic_remap(int off1,int off2)
 	outb(PIC2_CMD,ICW1_INIT|ICW1_ICW4);
 	outb(PIC1_DATA,off1);
 	outb(PIC2_DATA,off2);
-	outb(PIC1_DATA,4);
-	outb(PIC2_DATA,2);
+	outb(PIC1_DATA,2);
+	outb(PIC2_DATA,4);
 
 	outb(PIC1_DATA,ICW4_8086);
 	outb(PIC2_DATA,ICW4_8086);
