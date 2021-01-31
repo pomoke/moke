@@ -162,7 +162,7 @@ isr void page_fault(struct interrupt_frame *frame)
 {
 	u32 addr;
 	asm volatile("mov %%cr2,%0":"=a"(addr)::);
-	printk("Page fault at %x access %x.\n",frame->eip,addr);
+	printk("fault:Page fault at %x access %x.\n",frame->eip,addr);
 	halt();
 	return ;
 }
@@ -182,7 +182,7 @@ void (*faults[])(struct interrupt_frame,u32)=
 	invalid_seg,
 	invalid_seg,
 	gpe, 
-	page_fault, //Page fault.No paging for now.
+	page_fault, //Page fault.This will be a very big handler.
 	unknown_isr //x87 error.
 };
 

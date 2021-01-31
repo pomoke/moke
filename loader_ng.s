@@ -3,7 +3,7 @@
 .set CHECKSUM, -FLAGS-MAGIC_NUMBER
 .set KERNEL_STACK_SIZE, 4096
 
-.text
+.section .text.early 
 	.globl loader
 	.align 4
 	.long MAGIC_NUMBER
