@@ -6,7 +6,7 @@ CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
 	 -isystem $(shell $(CC) -print-file-name=include) \
 	 -isystem $(shell pwd)/header \
 	 -mgeneral-regs-only
-LDFLAGS = -Tlink.ld -melf_i386
+LDFLAGS = -Tlink_ng.ld -melf_i386
 AS = as
 ASFLAGS = --32 -gstabs
 
