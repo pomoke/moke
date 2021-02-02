@@ -79,10 +79,10 @@ void init_mmap(struct multiboot *this)
       kprint(type[p->type],PR_VGA,INFO);
       kprint("\n",PR_VGA,INFO);
       */
-	printk("mem: %x%x len %x%x type %d next %d\n",p->base_h,p->base_l,p->len_h,p->len_l,p->type,p->size);
+	printk("mem: %x - %x type %d next %d\n",p->base_l,p->base_l+p->len_l,p->type,p->size);
 	if (p->type==1)
 	{
-		//mem_area_add(p->base_l,p->len_l);
+		mem_area_add(p->base_l,p->len_l+p->base_l);
 	}
 	//mem_init();
   }

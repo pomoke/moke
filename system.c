@@ -107,7 +107,8 @@ asmlink void spin_up(void)
 	kprint("cmdline: ",PR_VGA,INFO);
 	kprint(boot_cmdline(mbinfo),PR_VGA,INFO);
 	kprint("\n",PR_VGA,INFO);
-	//show_mmap(mbinfo);
+	init_mmap(mbinfo);
+	show_usable_mem();
 	x=0;
 	intr_init();
 	kprint("ISR loaded.\n",PR_VGA,INFO);
