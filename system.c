@@ -49,7 +49,7 @@ void kprint(char *str,i16 target,i16 level)
 	}
 	return;
 }
-char conv[]="01234567890abcdef";
+char conv[]="0123456789abcdef";
 void kprint_n(u32 n,i16 target,i16 level)
 {
 	char s[9];
@@ -108,10 +108,6 @@ asmlink void spin_up(void)
 	kprint(boot_cmdline(mbinfo),PR_VGA,INFO);
 	kprint("\n",PR_VGA,INFO);
 	//show_mmap(mbinfo);
-	//*(int*)0x10000000=3;
-	//kprint_n(*(int *)0x10000000,PR_VGA,INFO);
-	//poweroff_qemu();
-	//asm("hlt");
 	x=0;
 	intr_init();
 	kprint("ISR loaded.\n",PR_VGA,INFO);
@@ -124,21 +120,17 @@ asmlink void spin_up(void)
 	struct date date;
 	rtc_read(&date);
 	kprint(week[date.weekday-1],PR_VGA,INFO);
-	printk("%s %d %x %d! %c","hello,world",0xdeadbeaf,32,64,'\n');
-	printk("%d %d %x %x %d %d %d\n",32,63,32,32,32,54,*(int *)(0x400000-4));
 	//panic("Nothing to do.");
 	uart_set_baud(0x3f8,38400);
 	serial_write(0x3f8,'\n');
 	serial_write(0x3f8,'a');
 	serial_write(0x3f8,'b');
+	printk("%p %p %p %!\n",0xc,0xff,0xdeadbeef);
 	char a;
 	printk("%x\n",&a);
 	//x=x/x;
 	for (;;)
 	{
-		//a=serial_read(0x3f8);
-		//printk("%c",a);
-		//serial_write(0x3f8,a);
 	}
 }
 

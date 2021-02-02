@@ -12,7 +12,7 @@ SECTIONS {
     {
 	    *(.bss.early)
     }
-    . += 0xc0000000;
+    . = 0xc0200000;
     .text ALIGN (0x1000) : AT(ADDR(.text)-0xc0000000)
     {
         *(.text)             /* all text sections from all files */

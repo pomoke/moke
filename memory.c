@@ -7,10 +7,17 @@
 #define ALLOC_SCHED 0 //May sleep.Do not use in intrs. I:This is the default
 #define ALLOC_INT 1 //atmoic allocation
 #define ALLOC_EMERG 2 //Emergency allocation
+#define ALLOC_MEM 3 //Memory allocation routines only.
 
 #define PAGE_SIZE 4096 //4k on x86
-#define MMAP_MAX 32
+#define MMAP_MAX 16  
 
+/* About memory zones for memory allocator
+ * 
+ * The zone is allocated from lower addr to higher addr.
+ * Once the zone is 'full',allocator scans the items and try to get a freed space.
+ *
+ */
 struct mmap
 {
 	void *from;
@@ -24,13 +31,11 @@ struct alloc {
 	struct alloc *next;
 };
 
-struct page_alloc {
-	struct page_alloc *prev;
+struct pre_zone {
 	void *addr;
-	u32 n;
-	struct page_alloc *next;
-};
-
+	u32 len;	//In bytes.
+	u32 used; 	//In bytes.
+}
 static struct mmap mem_area[MMAP_MAX];
 static u32 mem_area_count;
 void mem_init(void)
@@ -54,33 +59,41 @@ void mem_area_add(void *from,void *to) //Add a area from mmap regions.
 	mem_area_count++
 	return;
 }
-
-void * palloc(int n,u32 type) //Alloc n pages.
+/* addr and len should be aligned. */
+void pre_assign_area(void *addr,u32 len) //This area is used for allocation requests from memory allocators.
 {
-	;
+	pre_zone.addr=addr;
+	pre_zone.len=len;
 	return;
 }
-
 void * kalloc(u32 size,u32 type)
 {
-	;
-	return;
-}
-
-void pfree(void *page)
-{
-	if (page & 0xfff) //Not a page!
+	u32 n;
+	n=(size/4)*4+ size%4 ? 0 : 4 ; //Be aligned.
+	if (type==ALLOC_MEM)
+		return mem_alloc(u32 size);
+	void * alloc=NULL;
+	int cnt=2;
+	
+try_alloc:
+	FOR_ITEM(alloc,i)
 	{
-		kfree(page);
-		kprint("mem: attempt to pfree() at non-page addr %x\n",page);
+		if (i->size>=n)
+		{
+			;
+		}
 	}
-	else
+	if (!alloc && cnt)
 	{
-		//Traverse page link table.
+		cnt--;
+		//Get some pages from page allocator.
+		goto try_alloc;
 	}
+	return alloc;
 }
 
 void kfree(void *ptr)
 {
 	return;
 }
+

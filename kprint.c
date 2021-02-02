@@ -5,6 +5,7 @@
 #define PRINT_BUF_SIZE 512
 static char pbuf[PRINT_BUF_SIZE];
 static int kprint_target;
+static char hex[]="0123456789abcdef";
 void vprintk(char *fmt,va_list args)
 {
 	char *p=fmt,*q=pbuf,*i,*s;
@@ -23,7 +24,7 @@ void vprintk(char *fmt,va_list args)
 					  tmp=va_arg(args,u32);
 					  for (i=q+7;i>=q;i--)
 					  {
-						  *i="01234567890abcdef"[tmp%16];
+						  *i=hex[tmp%16];
 						  tmp/=16;
 					  }
 					  q+=8;
@@ -49,6 +50,11 @@ void vprintk(char *fmt,va_list args)
 				case 'c':
 					  c=va_arg(args,int);
 					  *q++=(char)c;
+					  break;
+				case '!':
+					  s=hex;
+					  while (*s)
+						  *q++=*s++;
 					  break;
 				default:
 					  *q++='%';
