@@ -97,7 +97,6 @@ asmlink void spin_up(void)
 	{
 		x++;
 	}
-	//finilize_gdt();
 	kprint("Loaded GDT.\n",PR_VGA,INFO);
 	x=0;
 	while (x<400000000)
@@ -107,10 +106,18 @@ asmlink void spin_up(void)
 	kprint("cmdline: ",PR_VGA,INFO);
 	kprint(boot_cmdline(mbinfo),PR_VGA,INFO);
 	kprint("\n",PR_VGA,INFO);
+	intr_init();
+	printk("ISR ready.\n");
+	reboot_tflt();
+	x=0;
+	asm volatile("int $0x80":::);
+	//asm volatile("mov $0x23,%%ax;mov %%ax,%%ds":::"ax");
+	printk("%x\n",get_physical(0xc0200004));
+	printk("%x\n",get_physical(0x0));
 	init_mmap(mbinfo);
+	pgalloc_init();
 	show_usable_mem();
 	x=0;
-	intr_init();
 	kprint("ISR loaded.\n",PR_VGA,INFO);
 	kprint("Starting interrupts...\n",PR_VGA,INFO);
 	x=0;
@@ -121,6 +128,7 @@ asmlink void spin_up(void)
 	struct date date;
 	rtc_read(&date);
 	kprint(week[date.weekday-1],PR_VGA,INFO);
+	int c=0;
 	//panic("Nothing to do.");
 	uart_set_baud(0x3f8,38400);
 	serial_write(0x3f8,'\n');

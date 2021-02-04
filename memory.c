@@ -38,13 +38,16 @@ struct pre_zone {
 	u32 len;	//In bytes.
 	u32 used; 	//In bytes.
 } pre_zone;
-static struct mmap mem_area[MMAP_MAX];
-static u32 mem_area_count=0;
+struct mmap mem_area[MMAP_MAX];
+u32 mem_area_count=0;
 void mem_init(void)
 {
-	//Reserve area below 1M and the kernel (~1M)
-	mem_area_del((void *)0x100000,(void *)0x200000);
-	//We do not use areas below 1M.
+	//Count usable pages.
+	u32 count=0;
+	for (int i=0;i<mem_area_count;i++)
+		count+=(mem_area[i].to-mem_area[i].from)/0x1000;
+	printk("mem: total avail pages %d\n",count);
+	pre_assign_area(4096);
 	return;
 }
 void show_usable_mem(void)
@@ -70,11 +73,19 @@ void mem_area_add(void *from,void *to) //Add a area from mmap regions.
 	return;
 }
 /* addr and len should be aligned. */
-void pre_assign_area(void *addr,u32 len) //This area is used for allocation requests from memory allocators.
+void pre_assign_area(u32 len) //This area is used for allocation requests from memory allocators.
 {
+	void * addr;
+	addr=(void *)((u32)mem_area[mem_area_count-1].to-len);
 	pre_zone.addr=addr;
 	pre_zone.len=len;
 	return;
+}
+void * mem_alloc(u32 size)
+{
+	void *p=pre_zone.addr+pre_zone.len-size-pre_zone.used;
+	pre_zone.used+=size;
+	return p;
 }
 void * kalloc(u32 size,u32 type)
 {
@@ -82,7 +93,7 @@ void * kalloc(u32 size,u32 type)
 	n=(size/4)*4+ size%4 ? 0 : 4 ; //Be aligned.
 	if (type==ALLOC_MEM)
 		//return mem_alloc(size);
-		return NULL;
+		return mem_alloc(size);
 	void * alloc=NULL;
 	int cnt=2;
 	

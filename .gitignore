@@ -8,3 +8,4 @@ boot
 *.lock
 moke
 *.swp
+smoke

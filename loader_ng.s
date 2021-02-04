@@ -87,6 +87,7 @@
 		subl $0x1000,%eax
 		jge fill_table
 
+		//movl $0x0,(0x1000)
 		xor %eax,%eax
 		mov %eax,%cr3
 		mov %cr0,%eax

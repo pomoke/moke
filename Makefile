@@ -1,6 +1,7 @@
 CC = gcc
 SHELL = bash
-OBJECTS = system.o loader_ng.o vga.o gdt.o mb.o interrupt.o cmos.o clock.o kprint.o power.o panic.o uart.o memory.o
+OBJECTS = system.o loader_ng.o vga.o gdt.o mb.o interrupt.o cmos.o clock.o kprint.o power.o panic.o uart.o memory.o pgalloc.o \
+	  paging.o
 CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
 	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -mno-red-zone -fno-pic\
 	 -isystem $(shell $(CC) -print-file-name=include) \

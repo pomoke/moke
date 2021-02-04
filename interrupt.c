@@ -146,26 +146,32 @@ isr void double_fault(struct interrupt_frame *frame,u32 errno)
 	kprint("Double fault occurred!\n",PR_VGA,ERROR);
 	return ;
 }
-isr void  invalid_seg(struct interrupt_frame *frame,u32 errno)
+isr void invalid_seg(struct interrupt_frame *frame,u32 errno)
 {
 	kprint("Attempt to load an invalid segment.\n",PR_VGA,ERROR);
 	return ;
 }
 isr void gpe(struct interrupt_frame *frame,u32 errno)
 {
-	kprint("General Protection Fault.\n",PR_VGA,ERROR);
+	printk("fault:General Protection Fault at %x errno %x\n",frame->eip,errno);
 	for (;;);
 	return ;
 }
 
-isr void page_fault(struct interrupt_frame *frame)
+isr void page_fault(struct interrupt_frame *frame,u32 errno)
 {
 	u32 addr;
 	asm volatile("mov %%cr2,%0":"=a"(addr)::);
-	printk("fault:Page fault at %x access %x.\n",frame->eip,addr);
+	if (addr)
+	{
+		printk("fault:Page fault at %x access %x.\n",frame->eip,addr);
+	}
+	else
+		printk("fault:Attempt to deref NULL pointer at %x.\n",frame->eip);
 	halt();
 	return ;
 }
+
 void (*faults[])(struct interrupt_frame,u32)=
 {
 	div_by_zero,
@@ -221,6 +227,12 @@ void intr_init(void)
 	idt_load(&idt_entry,IDT,255);
 	pic_init();	
 	printk("IDT at %x\n",&idt_entry);
+	return;
+}
+
+void idt_reload(void)
+{
+	idt_load(&idt_entry,IDT,255);
 	return;
 }
 

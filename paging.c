@@ -1,0 +1,96 @@
+/* Paging handler. */
+#include <type.h>
+#include <io.h>
+#include <mem.h>
+#include <link.h>
+#include <kprint.h>
+struct int_frame {
+	u32 eip;
+	u32 cs;
+	u32 eflags;
+};
+
+struct pde {
+	u32 present:1;
+	u32 write:1;
+	u32 user:1;
+	u32 write_through:1;
+	u32 nocache:1;
+	u32 access:1;
+	u32 size:1;
+	u32 ignore:1;
+	u32 data:3;
+	u32 pt:20;
+};
+
+struct pte {
+	u32 present:1;
+	u32 write:1;
+	u32 user:1;
+	u32 write_through:1;
+	u32 nocache:1;
+	u32 access:1;
+	u32 dirty:1;
+	u32 zero:1;
+	u32 size:1;
+	u32 avail:3;
+	u32 phy:20;
+};
+
+void isr pf_handler(struct int_frame * frame)
+{
+	u32 addr;
+	asm volatile("mov %%cr2,%%eax":"=a"(addr)::);
+	printk("page fault addr %x",addr);
+}
+
+struct pde *get_cr3(void)
+{
+	struct pde* cr3;
+	asm volatile("mov %%cr3,%%eax":"=r"(cr3)::"memory");
+	return cr3;
+}
+
+u32 get_physical(u32 virtual)
+{
+	void *ret;
+	struct pde *dir;
+	dir=get_cr3()+0xc0000000;
+	printk("paging: cr3 at %x,",dir,sizeof(struct pde));
+	//Translate this dir.
+	struct pte *item;
+	if (!dir[virtual>>22].present)
+	{
+		printk("paging:No such mapping for %x.\n",virtual);
+		return 0;
+	}
+	else
+	{
+		item=(dir[virtual>>22].pt)<<11;
+		printk("PD table at %x,PT table at %x,",&dir[virtual>>22],item);
+		//Translate pte.
+		if (!item[(virtual>>12)&0x3ff].present)
+		{
+			printk("not found\n");
+			return 0;
+		}
+		else
+		{
+			printk("addr %x -> %x\n",virtual,item[(virtual>>12)&0x3ff].phy<<12);
+			return item[(virtual>>12)&0x3ff].phy<<12 | (virtual&0x3ff);
+		}			
+	}
+
+}
+
+void invalidate_page(void *virtual)
+{
+	//struct pte *a=get_pg_item(virtual);
+	struct pte *a=0;
+	a->present=0;
+	asm volatile("invlpg (%0)"::"r"(virtual):"memory");
+}
+void paging_init(void)
+{
+	//Some null function now.
+}

@@ -84,8 +84,10 @@ void init_mmap(struct multiboot *this)
 	{
 		mem_area_add(p->base_l,p->len_l+p->base_l);
 	}
+	//printk("%d\n",*(int *)0);
 	//mem_init();
   }
+  mem_init();
   return;
 }
 
