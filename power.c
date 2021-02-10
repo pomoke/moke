@@ -30,7 +30,7 @@ void halt(void)
 	//asm volatile("hlt");
 	for (;;) ;
 	return;
-}
+} __attribute__((noreturn));
 
 void reboot_tflt(void)
 {
@@ -39,4 +39,4 @@ void reboot_tflt(void)
 	//idt_reload();
 	asm volatile("int $80;":::);
 	return;
-}
+} __attribute__((noreturn));

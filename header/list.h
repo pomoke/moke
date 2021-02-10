@@ -22,7 +22,10 @@
 	(a)->next=(item);\
 	(b)->prev=(item);\
 
-#define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b->next ;b=b->next )
+//#define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b->next ;b=b->next ) WRONG!
+#define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b ;b=b->next )
+
+
 
 #define PREV(a) ((a))->prev
 

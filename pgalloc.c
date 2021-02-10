@@ -25,6 +25,14 @@ struct alloc {
 };
 
 struct alloc *page_list,pgl;
+
+void show_pg_list(void)
+{
+	printk("mem: showing page allocations.\n");
+	FOR_ITEM(page_list,i)
+		printk("page region %x len %d next %x\n",i->addr,i->len,i->next);
+	return;
+}
 void *pgalloc_init(int n,u32 type)
 {
 	page_list=&pgl;
@@ -33,16 +41,17 @@ void *pgalloc_init(int n,u32 type)
 
 	page_list->prev=NULL;
 	page_list->addr=0;
-	page_list->len=1;
+	page_list->len=0;
 	for (int i=0;i<mem_area_count;i++)
 	{
 		//Create alloc items.
 		p=kalloc(sizeof(struct alloc),ALLOC_MEM);
+		printk("mem:storing page item at %x\n",p);
 		p->addr=mem_area[i].from;
 		p->len=mem_area[i].to-mem_area[i].from;
-		p->next=p;
-		this->prev=p;
-		this->next=NULL;
+		p->prev=this;
+		this->prev=NULL;
+		this->next=p;
 		this=p;
 	}
 	return;
@@ -53,17 +62,17 @@ void * palloc(int n,u32 type) //Alloc n pages.
 	void * ret=NULL;
 	struct alloc *p;
 	FOR_ITEM(page_list,i)
-		if (i->len >= n)
+		if (i->len >= n && !(i->len&1))
 		{
 			//Now the entry is breaked into 2 entries.
 			ret=i->addr;
 			p=kalloc(sizeof(struct alloc),ALLOC_MEM);
 			p->prev=i->prev;
 			p->addr=i->addr;
-			p->len=n;
+			p->len=n*4096|1;
 			p->next=i;
-			i->addr=i->addr+n;
-			i->len-=n;
+			i->addr=i->addr+n*4096;
+			i->len-=n*4096;
 			i->prev=p;
 		}	
 	return ret;

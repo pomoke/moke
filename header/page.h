@@ -1,0 +1,1 @@
+#define KERNEL_OFFSET 0xc0000000

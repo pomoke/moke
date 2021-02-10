@@ -6,6 +6,7 @@
 #include "header/intr.h"
 #include "header/clock.h"
 #include "header/power.h"
+#include <cpuid.h>
 #include <serial.h>
 extern int boottype;
 asmlink i32 sum(i32 a,i32 b,i32 c)
@@ -92,6 +93,7 @@ asmlink void spin_up(void)
 	kprint(" ",PR_VGA,INFO);
 	kprint_n((u32)gdt,PR_VGA,INFO);
 	kprint(" is loaded\n",PR_VGA,INFO);
+	printk("CPU vendor: %s\n",cpuid_vendor());
 	x=0;
 	while (x<400000000)
 	{
@@ -108,7 +110,6 @@ asmlink void spin_up(void)
 	kprint("\n",PR_VGA,INFO);
 	intr_init();
 	printk("ISR ready.\n");
-	reboot_tflt();
 	x=0;
 	asm volatile("int $0x80":::);
 	//asm volatile("mov $0x23,%%ax;mov %%ax,%%ds":::"ax");
@@ -116,8 +117,12 @@ asmlink void spin_up(void)
 	printk("%x\n",get_physical(0x0));
 	init_mmap(mbinfo);
 	pgalloc_init();
+
+	show_pg_list();
 	show_usable_mem();
 	x=0;
+	for (int i=0;i<20;i++)
+		printk("alloc:%x\n",palloc(1,0));
 	kprint("ISR loaded.\n",PR_VGA,INFO);
 	kprint("Starting interrupts...\n",PR_VGA,INFO);
 	x=0;
@@ -135,11 +140,12 @@ asmlink void spin_up(void)
 	serial_write(0x3f8,'a');
 	serial_write(0x3f8,'b');
 	printk("%p %p %p %!\n",0xc,0xff,0xdeadbeef);
+	printk("allocing pages from %x...\n",palloc(10,0));
 	char a;
 	printk("%x\n",&a);
 	//x=x/x;
-	for (;;)
-	{
-	}
+	for (;;);
+
+
 }
 

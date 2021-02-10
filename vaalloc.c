@@ -11,11 +11,14 @@
 
 #define KERNEL_OFFSET 0xc0000000
 
+
+//0xc0000000 - 0xffffffff
 void * kva_alloc(u32 n)
 {
 	;
 }
 
+//0x0 - 0xc0000000
 void * uva_alloc(u32 n)
 {
 	;

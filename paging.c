@@ -53,7 +53,6 @@ struct pde *get_cr3(void)
 
 u32 get_physical(u32 virtual)
 {
-	void *ret;
 	struct pde *dir;
 	dir=get_cr3()+0xc0000000;
 	printk("paging: cr3 at %x,",dir,sizeof(struct pde));
@@ -90,7 +89,28 @@ void invalidate_page(void *virtual)
 	a->present=0;
 	asm volatile("invlpg (%0)"::"r"(virtual):"memory");
 }
+
+void invalidate_all(void)
+{
+	//Reload %cr3
+	asm volatile("mov %%cr3,%%eax;mov %%eax,%%cr3":::"eax");
+}
+
+void map_page(void *v,void *p) //v->p
+{
+	//Find PD table
+	struct pde *pd=get_cr3();
+	return ;
+}
+
+void unshare_page(void *virtual)
+{
+	//Some null function now still.
+	;
+}
+
 void paging_init(void)
 {
-	//Some null function now.
+	//Some null function now as we have initialize early paging.
+	;
 }

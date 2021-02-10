@@ -51,11 +51,6 @@ void vprintk(char *fmt,va_list args)
 					  c=va_arg(args,int);
 					  *q++=(char)c;
 					  break;
-				case '!':
-					  s=hex;
-					  while (*s)
-						  *q++=*s++;
-					  break;
 				default:
 					  *q++='%';
 					  *q++=*p;

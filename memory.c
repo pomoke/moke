@@ -24,6 +24,7 @@ struct mmap
 	void *to;
 };
 
+
 struct alloc {
 	struct alloc *prev;
 	void *addr;
@@ -31,7 +32,7 @@ struct alloc {
 	struct alloc *next;
 };
 
-struct alloc *alloc_list;
+struct alloc *alloc_list,pre[100];
 
 struct pre_zone {
 	void *addr;
@@ -75,10 +76,10 @@ void mem_area_add(void *from,void *to) //Add a area from mmap regions.
 /* addr and len should be aligned. */
 void pre_assign_area(u32 len) //This area is used for allocation requests from memory allocators.
 {
-	void * addr;
-	addr=(void *)((u32)mem_area[mem_area_count-1].to-len);
-	pre_zone.addr=addr;
-	pre_zone.len=len;
+	//void * addr;
+	//addr=(void *)((u32)mem_area[mem_area_count-1].to-len);
+	pre_zone.addr=pre;
+	pre_zone.len=sizeof(pre);
 	return;
 }
 void * mem_alloc(u32 size)

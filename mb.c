@@ -60,25 +60,12 @@ void init_mmap(struct multiboot *this)
   //kprint("memmap entry ",PR_VGA,INFO);
   //kprint_n(((u32)this->mmap_addr)&0xFFFFFFFF,PR_VGA,INFO);
   struct mb_mem *p=(struct mb_mem *)((void *)this->mmap_addr);
-  /*kprint(" length ",PR_VGA,INFO);
-  kprint_n((u32)this->mmap_addr,PR_VGA,INFO);
-  kprint("\n\n",PR_VGA,INFO);
-  kprint_n(this->mmap_length,PR_VGA,INFO);
-  kprint("Memmap:\n",PR_VGA,INFO);*/
   printk("mem: entry %x length %d\n",this->mmap_addr,this->mmap_length);
   for (;(void *)p<(void *)this->mmap_addr+(u32)this->mmap_length;p=(struct mb_mem *)((u32)p + p->size + sizeof(p->size)))
   {
 	  n=0;
 	  while (n<200000000)
 		  n++;
-	/*
-      kprint_n(p->base,PR_VGA,INFO);
-      kprint(" len ",PR_VGA,INFO);
-      kprint_n(p->len,PR_VGA,INFO);
-      kprint(" type ",PR_VGA,INFO);
-      kprint(type[p->type],PR_VGA,INFO);
-      kprint("\n",PR_VGA,INFO);
-      */
 	printk("mem: %x - %x type %d next %d\n",p->base_l,p->base_l+p->len_l,p->type,p->size);
 	if (p->type==1)
 	{
