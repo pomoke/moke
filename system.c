@@ -122,7 +122,7 @@ asmlink void spin_up(void)
 	show_usable_mem();
 	x=0;
 	for (int i=0;i<20;i++)
-		printk("alloc:%x\n",palloc(1,0));
+		printk("alloc:%x\n",palloc(5000,0));
 	kprint("ISR loaded.\n",PR_VGA,INFO);
 	kprint("Starting interrupts...\n",PR_VGA,INFO);
 	x=0;

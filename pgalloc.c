@@ -62,7 +62,7 @@ void * palloc(int n,u32 type) //Alloc n pages.
 	void * ret=NULL;
 	struct alloc *p;
 	FOR_ITEM(page_list,i)
-		if (i->len >= n && !(i->len&1))
+		if (i->len >= n*4096 && !(i->len&1))
 		{
 			//Now the entry is breaked into 2 entries.
 			ret=i->addr;
