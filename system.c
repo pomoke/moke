@@ -8,6 +8,7 @@
 #include "header/power.h"
 #include <cpuid.h>
 #include <serial.h>
+#include <mem.h>
 extern int boottype;
 asmlink i32 sum(i32 a,i32 b,i32 c)
 {
@@ -117,12 +118,15 @@ asmlink void spin_up(void)
 	printk("%x\n",get_physical(0x0));
 	init_mmap(mbinfo);
 	pgalloc_init();
-
+	kva_init();
+	volatile char *q;
+	for (int i=0;i<10;i++)
+		printk("this %x\n",kva_alloc(100000));
 	show_pg_list();
 	show_usable_mem();
 	x=0;
-	for (int i=0;i<20;i++)
-		printk("alloc:%x\n",palloc(5000,0));
+	//for (int i=0;i<20;i++)
+	//	printk("alloc:%x\n",palloc(5000));
 	kprint("ISR loaded.\n",PR_VGA,INFO);
 	kprint("Starting interrupts...\n",PR_VGA,INFO);
 	x=0;
@@ -140,7 +144,7 @@ asmlink void spin_up(void)
 	serial_write(0x3f8,'a');
 	serial_write(0x3f8,'b');
 	printk("%p %p %p %!\n",0xc,0xff,0xdeadbeef);
-	printk("allocing pages from %x...\n",palloc(10,0));
+	printk("allocing pages from %x...\n",palloc(10));
 	char a;
 	printk("%x\n",&a);
 	//x=x/x;
