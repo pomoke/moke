@@ -9,3 +9,4 @@ boot
 moke
 *.swp
 smoke
+tags

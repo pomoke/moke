@@ -2,6 +2,7 @@
 #include <io.h>
 #include <kprint.h>
 #include <list.h>
+#include <mem_internal.h>
 /* Memory Allocator */
 
 #define ALLOC_SCHED 0 //May sleep.Do not use in intrs. I:This is the default
@@ -45,7 +46,7 @@ void mem_init(void)
 {
 	//Count usable pages.
 	u32 count=0;
-	for (int i=0;i<mem_area_count;i++)
+	for (u32 i=0;i<mem_area_count;i++)
 		count+=(mem_area[i].to-mem_area[i].from)/0x1000;
 	printk("mem: total avail pages %d\n",count);
 	pre_assign_area(4096);
@@ -53,7 +54,7 @@ void mem_init(void)
 }
 void show_usable_mem(void)
 {
-	for (int i=0;i<mem_area_count;i++)
+	for (u32 i=0;i<mem_area_count;i++)
 		printk("mem: usable %x - %x \n",mem_area[i].from,mem_area[i].to);
 }
 void mem_area_del(void *from,void *to) //Remove a area from mmap regions
@@ -66,7 +67,7 @@ void mem_area_add(void *from,void *to) //Add a area from mmap regions.
 {
 	if (from==0x0)
 		return;
-	if (from=0x100000)
+	if (from==0x100000)
 		from=0x300000;
 	mem_area[mem_area_count].from=from;
 	mem_area[mem_area_count].to=to;
@@ -88,15 +89,16 @@ void * mem_alloc(u32 size)
 	pre_zone.used+=size;
 	return p;
 }
+/* addr is always 8-byte aligned,so the 0-2 bit is used to mark usage.*/
 void * kalloc(u32 size,u32 type)
 {
 	u32 n;
-	n=(size/4)*4+ size%4 ? 0 : 4 ; //Be aligned.
+	n=(size/8)*8+ size%8 ? 0 : 8 ; //Be aligned.
 	if (type==ALLOC_MEM)
 		//return mem_alloc(size);
 		return mem_alloc(size);
 	void * alloc=NULL;
-	int cnt=2;
+	int cnt=2; //We have two chances to scan through the allocation list.
 	
 try_alloc:
 	FOR_ITEM(alloc_list,i)
@@ -113,6 +115,16 @@ try_alloc:
 		goto try_alloc;
 	}
 	return alloc;
+}
+
+void pgalloc(int n) //n pages mapped in kernel address space.
+{
+	u32 p,v;
+	p=palloc(n);
+	v=kva_alloc(n);
+	for (int i=0;i<n;i++)
+		map_page(v+PAGE_SIZE*n,p+PAGE_SIZE*n);
+	return;
 }
 
 void kfree(void *ptr)

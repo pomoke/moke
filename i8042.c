@@ -1,6 +1,7 @@
 #include <type.h>
 #include <io.h>
 #include <intr.h>
+#include <link.h>
 
 /* 
  * Driver of i8042 keybord controller
@@ -31,6 +32,12 @@
 #define KBD_RESEND 0xfe
 #define KBD_TEST_OK 0xaa
 
+//i8042 kbd controller uses int 2.
+
+void isr i8042_entry(struct interrupt_frame)
+{
+	return;
+}
 void i8042_init(void)
 {
 	return;

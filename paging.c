@@ -46,9 +46,14 @@ void isr pf_handler(struct int_frame * frame)
 
 struct pde *get_cr3(void)
 {
-	struct pde* cr3;
+	struct pde *cr3;
 	asm volatile("mov %%cr3,%%eax":"=r"(cr3)::"memory");
 	return cr3;
+}
+
+void load_cr3(void *cr3)
+{
+	asm volatile("mov %%eax,%%cr3"::"a"(cr3):);
 }
 
 u32 get_physical(u32 virtual)
@@ -81,13 +86,19 @@ u32 get_physical(u32 virtual)
 	}
 
 }
+void flush_page(void *virtual)
+{
+	asm volatile("invlpg (%0)"::"r"(virtual):"memory");
+	return;
+}
 
 void invalidate_page(void *virtual)
 {
 	//struct pte *a=get_pg_item(virtual);
 	struct pte *a=0;
 	a->present=0;
-	asm volatile("invlpg (%0)"::"r"(virtual):"memory");
+	//asm volatile("invlpg (%0)"::"r"(virtual):"memory");
+	flush_page(virtual);
 }
 
 void invalidate_all(void)
@@ -96,10 +107,23 @@ void invalidate_all(void)
 	asm volatile("mov %%cr3,%%eax;mov %%eax,%%cr3":::"eax");
 }
 
+/* This function allocates a page when PT does not exist.Do not use this until mm is ready.
+ * However pages within KERNEL_OFFSET+0x0~0x300000 is always safe to map.
+ */
 void map_page(void *v,void *p) //v->p
 {
 	//Find PD table
 	struct pde *pd=get_cr3();
+	struct pte *pt;
+	if (!pd[(u32)v>>22].present)
+	{
+		//pt=palloc(1)
+		;
+	}
+	else
+		pt=pd[(u32)v>>22].pt<<11;
+	pt[((u32)v>>12)&0x3ff].phy=(u32)p>>12;
+	flush_page(v);
 	return ;
 }
 

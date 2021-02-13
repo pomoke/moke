@@ -78,11 +78,15 @@ void int_ack(void) //PIC version,use this at the end of ISR.
 {
 	outb(0x20,0x20);
 }
-
+u8 pic_get_irq(int ocw3)
+{
+	outb(PIC1_CMD,ocw3);
+	outb(PIC2_CMD,ocw3);
+	return (inb(PIC2_CMD)<<8)|inb(PIC1_CMD);
+}
 u8 this_int(void) //Only in ISRs.
 {
-	outb(PIC1_CMD,PIC_READ_ISR);
-	return inb(PIC1_CMD);
+	return pic_get_irq(PIC_READ_ISR);
 }
 
 struct interrupt_frame {
@@ -94,11 +98,7 @@ struct interrupt_frame {
 isr void unknown_isr(struct interrupt_frame *frame)
 {
 	if (this_int()!=1)
-	{
-		kprint("Interrupt ",PR_VGA,INFO);
-		kprint_n(this_int(),PR_VGA,INFO);
-		kprint("\n",PR_VGA,INFO);
-	}
+		printk("intr %x\n",this_int());
 	int_ack();
 	return;
 }
@@ -172,11 +172,17 @@ isr void page_fault(struct interrupt_frame *frame,u32 errno)
 	return ;
 }
 
+isr void nmi_handler(struct interrupt_frame *frame)
+{
+	printk("fault:nmi at %x\n",frame->eip);
+	halt();
+}
+
 void (*faults[])(struct interrupt_frame,u32)=
 {
 	div_by_zero,
 	unknown_isr, //trap,not now.
-	unknown_isr, //Unused
+	nmi_handler, //Unused
 	unknown_isr, //int 3
 	overflow,
 	bound_check,
@@ -251,8 +257,8 @@ void pic_remap(int off1,int off2)
 	outb(PIC2_CMD,ICW1_INIT|ICW1_ICW4);
 	outb(PIC1_DATA,off1);
 	outb(PIC2_DATA,off2);
-	outb(PIC1_DATA,2);
-	outb(PIC2_DATA,4);
+	outb(PIC1_DATA,4);
+	outb(PIC2_DATA,2);
 
 	outb(PIC1_DATA,ICW4_8086);
 	outb(PIC2_DATA,ICW4_8086);

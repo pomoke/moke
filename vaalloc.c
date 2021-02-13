@@ -4,6 +4,7 @@
  * leads to immediate page fault.
  *
  * So physical address must be mapped to virtual address.
+ * This file only allocates Virtual address space.
  *
  */
 #include <type.h>
@@ -18,7 +19,7 @@
  * 
  *
  */
-char kva_zone[262143]; //Each byte represents a page ref count in kernel zone,
+char kva_zone[262143]; //Each byte represents a page ref count in kernel zone
 void kva_ref(void * addr,u32 n)
 {
 	u32 t=((u32)addr-KERNEL_OFFSET)/PAGE_SIZE;
@@ -28,6 +29,10 @@ void kva_ref(void * addr,u32 n)
 }
 void kva_unref(void * addr,u32 n)
 {
+	u32 t=((u32)addr-KERNEL_OFFSET)/PAGE_SIZE;
+	for (u32 i=0;i<n;i++)
+		if (kva_zone[t+i])
+			kva_zone[t+i]--;
 	return;
 }
 void * kva_alloc(u32 n)

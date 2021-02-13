@@ -27,8 +27,7 @@ void poweroff_qemu()
 void halt(void)
 {
 	int_stop();
-	//asm volatile("hlt");
-	for (;;) ;
+	asm volatile("hlt");
 	return;
 } __attribute__((noreturn));
 

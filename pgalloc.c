@@ -3,6 +3,7 @@
 #include <kprint.h>
 #include <list.h>
 #include <mem_internal.h>
+#include <mem_type.h>
 
 /* Page Allocator */
 
@@ -12,7 +13,6 @@
 
 #define ALLOC_MEM 3
 
-#define PAGE_SIZE 4096 //4k on x86
 #define MMAP_MAX 32
 
 #define ALLOC_FREE 1

@@ -120,10 +120,17 @@ asmlink void spin_up(void)
 	pgalloc_init();
 	kva_init();
 	volatile char *q;
-	for (int i=0;i<10;i++)
-		printk("this %x\n",kva_alloc(100000));
+	//for (int i=0;i<10;i++)
+	//	printk("this %x\n",kva_alloc(100000));
+	
 	show_pg_list();
 	show_usable_mem();
+	volatile u32 *p=0xc02fe000;
+	*p=3;
+	printk("p=%x\n",*p);
+	printk("Mapping...\n");
+	map_page(0xc02fe000,palloc(1));
+	printk("p=%x\n",*p);
 	x=0;
 	//for (int i=0;i<20;i++)
 	//	printk("alloc:%x\n",palloc(5000));
@@ -148,7 +155,9 @@ asmlink void spin_up(void)
 	char a;
 	printk("%x\n",&a);
 	//x=x/x;
-	for (;;);
+	//for (;;);
+	panic("Nothing to do.\n");
+	halt();
 
 
 }
