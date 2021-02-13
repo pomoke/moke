@@ -10,3 +10,4 @@ moke
 *.swp
 smoke
 tags
+build/

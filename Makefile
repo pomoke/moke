@@ -7,6 +7,7 @@ CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
 	 -isystem $(shell $(CC) -print-file-name=include) \
 	 -isystem $(shell pwd)/header \
 	 -mgeneral-regs-only -Og 
+#CFLAGS_INTR = -mg 
 LDFLAGS = -Tlink_ng.ld -melf_i386
 AS = as
 ASFLAGS = --32 -gstabs
@@ -15,16 +16,16 @@ ASFLAGS = --32 -gstabs
 
 all : kernel
 
-kernel : $(OBJECTS)
-	ld $(LDFLAGS) $(OBJECTS) -o moke
+kernel : $(foreach i,$(OBJECTS),build/$(i))
+	ld $(LDFLAGS) $(foreach i,$(OBJECTS),build/$(i)) -o moke
 
 strip :
 	strip moke -o smoke
 
-%.o : %.s
+build/%.o : %.s
 	$(AS) $(ASFLAGS) $< -o $@
 
-%.o : %.c
+build/%.o : %.c
 	$(CC) $(CFLAGS) $< -o $@
 
 cdrom : kernel
@@ -54,5 +55,5 @@ kvm : kernel
 	kvm -m 128M -kernel moke
 
 clean : 
-	rm -rf *.o iso/boot/kernel *.iso moke s_moke
+	- rm -rf build/* iso/boot/kernel *.iso moke smoke
 
