@@ -141,6 +141,7 @@ asmlink void spin_up(void)
 		x++;
 	x=0;
 	int_start();
+	//Test palloc() and pfree() 
 	struct date date;
 	rtc_read(&date);
 	kprint(week[date.weekday-1],PR_VGA,INFO);
@@ -150,8 +151,9 @@ asmlink void spin_up(void)
 	serial_write(0x3f8,'\n');
 	serial_write(0x3f8,'a');
 	serial_write(0x3f8,'b');
-	printk("%p %p %p %!\n",0xc,0xff,0xdeadbeef);
+	//printk("%p %p %p %!\n",0xc,0xff,0xdeadbeef);
 	printk("allocing pages from %x...\n",palloc(10));
+	pgalloc_test();
 	char a;
 	printk("%x\n",&a);
 	//x=x/x;
