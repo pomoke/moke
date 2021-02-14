@@ -114,15 +114,24 @@ void map_page(void *v,void *p) //v->p
 {
 	//Find PD table
 	struct pde *pd=get_cr3();
-	struct pte *pt;
+	struct pte *pt,*phy;
 	if (!pd[(u32)v>>22].present)
 	{
 		//pt=palloc(1)
-		;
+		phy=palloc(1,0);//Physical address
+		map_page(0xc02fc000,phy);
+		pt=0xc02fc000;
+		//Set PDE
+		*(u32 *)(&pd[(u32)v>>22])=0;
+		pd[(u32)v>>22].pt=(u32)phy>>11;
+		pd[(u32)v>>22].write=1;
+		pd[(u32)v>>22].present=1;
 	}
-	else
-		pt=pd[(u32)v>>22].pt<<11;
+	pt=pd[(u32)v>>22].pt<<11;
 	pt[((u32)v>>12)&0x3ff].phy=(u32)p>>12;
+	pt[((u32)v>>12)&0x3ff].write=1;
+	pt[((u32)v>>12)&0x3ff].present=1;
+	pt[((u32)v>>12)&0x3ff].user=(u32)p>>0;
 	flush_page(v);
 	return ;
 }

@@ -129,7 +129,12 @@ asmlink void spin_up(void)
 	*p=3;
 	printk("p=%x\n",*p);
 	printk("Mapping...\n");
-	map_page(0xc02fe000,palloc(1));
+	map_page(0xc02fe000,palloc(1,0));
+	map_page(0xd0000000,palloc(1,0));
+	p=0xd0000000;
+	*p=3;
+	//p=0xe0000000;
+	//*p=4;
 	printk("p=%x\n",*p);
 	x=0;
 	//for (int i=0;i<20;i++)
@@ -152,8 +157,10 @@ asmlink void spin_up(void)
 	serial_write(0x3f8,'a');
 	serial_write(0x3f8,'b');
 	//printk("%p %p %p %!\n",0xc,0xff,0xdeadbeef);
-	printk("allocing pages from %x...\n",palloc(10));
-	pgalloc_test();
+	printk("allocing pages from %x...\n",palloc(10,0));
+	//pgalloc_test();
+	char *p1=pgalloc(32);
+	printk("%x\n",p1);
 	char a;
 	printk("%x\n",&a);
 	//x=x/x;

@@ -5,7 +5,7 @@
 
 void *kalloc(u32 size,u32 type);
 void kfree(void *addr);
-void *palloc(u32 n);
+void *palloc(u32 n,u32 type);
 void pfree(void *addr);
 
 void * kva_alloc(u32 n);
