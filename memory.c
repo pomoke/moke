@@ -101,8 +101,7 @@ void * mem_alloc(u32 size)
  */
 void kalloc_init(void)
 {
-	struct alloc *alloc_list;
-		alloc_list=kalloc(sizeof(struct alloc),ALLOC_MEM);
+	alloc_list=kalloc(sizeof(struct alloc),ALLOC_MEM);
 	alloc_list->prev=0;
 	alloc_list->next=0;
 	alloc_list->addr=0;
@@ -112,8 +111,9 @@ void kalloc_init(void)
 
 void kalloc_add_region(void * addr,u32 len)
 {
+	printk("mm: add region %x len %d\n",addr,len);
 	FOR_ITEM(alloc_list,i)
-		if (!i->next)
+		if (!(i->next))
 		{
 			struct alloc *p;
 			p=kalloc(sizeof(struct alloc),ALLOC_MEM);
@@ -122,33 +122,38 @@ void kalloc_add_region(void * addr,u32 len)
 			p->addr=addr;
 			p->len=len;
 			i->next=p;
+			break;
 		}
 	return;
 }
 void kalloc_setup(void)
 {
+	printk("Setting up kalloc...\n");
 	kalloc_init();
-	void *p=pgalloc(10);
-	kalloc_add_region(p,10);
+	void *p=pgalloc(16);
+	kalloc_add_region(p,16*PAGE_SIZE);
 	return;
 }
 
 void * kalloc(u32 size,u32 type)
 {
 	u32 n;
-	n=(size/8)*8+ size%8 ? 0 : 8 ; //Be aligned.
+	n=(size/8)*8+ (size%8 ? 8 : 0) ; //Be aligned.
 	if (type==ALLOC_MEM)
 		//return mem_alloc(size);
 		return mem_alloc(size);
 	void * alloc=NULL;
 	int cnt=2; //We have two chances to scan through the allocation list.
+	int flag=0;
 	
 try_alloc:
 	FOR_ITEM(alloc_list,i)
 	{
-		if (i->len>=n && !(i->len&1) ) //Find a available one.
+		if ((i->len >= n) && !(i->len&1) ) //Find a available one.
 		{
+			flag=1;
 			struct alloc *p=kalloc(sizeof(struct alloc),ALLOC_MEM);
+			alloc=i->addr;
 			p->len=n|1;
 			p->next=i;
 			p->prev=i->prev;
@@ -162,23 +167,60 @@ try_alloc:
 	{
 		cnt--;
 		//Get some pages from page allocator.
+		char *p=pgalloc(16);
+		kalloc_add_region(p,16*PAGE_SIZE);
 		goto try_alloc;
 	}
+	if (flag)
+		printk("kalloc(%d->%d)=%x\n",size,n,alloc);
+	else
+		printk("kalloc(%d->%d)=failed\n",size,n);
 	return alloc;
 }
 
-void pgalloc(int n) //n pages mapped in kernel address space.
+void * pgalloc(u32 n) //n pages mapped in kernel address space.
 {
 	u32 p,v;
 	p=palloc(n,0);
 	v=kva_alloc(n);
 	for (int i=0;i<n;i++)
 		map_page(v+PAGE_SIZE*n,p+PAGE_SIZE*n);
-	return;
+	return v;
 }
 
 void kfree(void *ptr)
 {
+	int flag=0;
+	FOR_ITEM(alloc_list,i)
+		if (i->addr==ptr && i->len&1)
+		{
+			flag=1;
+			//Mark this as free
+			i->len=i->len&0xfffffffe;
+			//Left join
+			if (i->prev && !(i->prev->len&1))
+			{
+				i->addr=i->prev->addr;
+				i->len+=i->prev->len;
+				i->prev=i->prev->prev;
+				//kfree(i->prev);
+			}
+			//Right join
+			if (i->next && !(i->next->len&1))
+			{
+				i->len+=i->next->len;
+				i->next=i->next->next;
+				//kfree(i->next);
+			}
+		}
 	return;
 }
 
+void kalloc_test(void)
+{
+	char *p[10];
+	p[0]=kalloc(17,ALLOC_SCHED);
+	p[1]=kalloc(17,ALLOC_SCHED);
+	printk("kalloc addr %x %x\n",p[0],p[1]);
+	return ;
+}

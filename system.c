@@ -158,16 +158,18 @@ asmlink void spin_up(void)
 	serial_write(0x3f8,'b');
 	//printk("%p %p %p %!\n",0xc,0xff,0xdeadbeef);
 	printk("allocing pages from %x...\n",palloc(10,0));
+	kalloc_setup();
+	kalloc_test();
 	//pgalloc_test();
 	char *p1=pgalloc(32);
-	printk("%x\n",p1);
-	char a;
-	printk("%x\n",&a);
+	//printk("%x\n",p1);
+	//char a;
+	//printk("%x\n",&a);
 	printk("page free: %d MB\n",page_get_free()/1024/1024);
 	//x=x/x;
-	//for (;;);
-	panic("Nothing to do.\n");
-	halt();
+	for (;;);
+	//panic("Nothing to do.\n");
+	//halt();
 
 
 }
