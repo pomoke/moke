@@ -11,3 +11,5 @@ void pfree(void *addr);
 void * kva_alloc(u32 n);
 void kva_init(void);
 void map_page(void *v,void *p);
+
+u32 page_get_free(void);

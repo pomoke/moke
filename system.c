@@ -163,6 +163,7 @@ asmlink void spin_up(void)
 	printk("%x\n",p1);
 	char a;
 	printk("%x\n",&a);
+	printk("page free: %d MB\n",page_get_free()/1024/1024);
 	//x=x/x;
 	//for (;;);
 	panic("Nothing to do.\n");

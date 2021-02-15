@@ -25,7 +25,10 @@ struct alloc {
 };
 
 struct alloc *page_list,pgl;
-
+struct alloc_stat {
+	u32 size;
+	u32 used;
+} page_stat;
 void show_pg_list(void)
 {
 	printk("mem: showing page allocations.\n");
@@ -39,6 +42,9 @@ void *pgalloc_init(int n,u32 type)
 	struct alloc *p,*this;
 	this=page_list;
 
+	page_stat.size=0;
+	page_stat.used=0;
+
 	page_list->prev=NULL;
 	page_list->addr=0;
 	page_list->len=0;
@@ -51,11 +57,17 @@ void *pgalloc_init(int n,u32 type)
 		p->len=mem_area[i].to-mem_area[i].from;
 		p->prev=this;
 		p->next=i;
+		page_stat.size+=p->len;
 		this->prev=NULL;
 		this->next=p;
 		this=p;
 	}
 	return;
+}
+
+u32 page_get_free(void)
+{
+	return page_stat.size-page_stat.used;
 }
 
 void * palloc(int n,u32 type) //Alloc n pages.
