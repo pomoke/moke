@@ -3,11 +3,13 @@
 #include "header/kprint.h"
 #include "header/power.h"
 #include <link.h>
+#include <kprint.h>
 /* We do not use 16-bit mode here and everywhere!*/
 #define ISR_TASK 0x5
 #define ISR_INTR 0xE
 #define ISR_TRAP 0XF 
 
+#include <uart.h>
 /* PIC helpers */
 #define PIC1 0x20
 #define PIC2 0xA0
@@ -43,12 +45,12 @@
 /* The IDT table requires the minimum limit of 100h.
  * There are 256 intr's available.
  */
-struct idt_entry {
+volatile struct idt_entry {
 	u16 limit; //bytes-1
 	u32 addr;//Linear address
 } __attribute__((packed));
 
-struct idt_entry idt_entry;
+volatile struct idt_entry idt_entry;
 /* IA-32 table */
 struct idt_desc {
 	u16 offset_l;
@@ -74,10 +76,7 @@ void int_stop(void) //Use this when we are done!
 	return ;
 }
 
-void int_ack(void) //PIC version,use this at the end of ISR.
-{
-	outb(0x20,0x20);
-}
+
 u8 pic_get_irq(int ocw3)
 {
 	outb(PIC1_CMD,ocw3);
@@ -89,6 +88,48 @@ u8 this_int(void) //Only in ISRs.
 	return pic_get_irq(PIC_READ_ISR);
 }
 
+void int_ack(void) //PIC version,use this at the end of ISR.
+{
+	if (this_int()>8)
+		outb(PIC2_CMD,0x20);
+	outb(PIC1_CMD,0x20);
+}
+
+void irq_mask(u8 irq)
+{
+	u16 port;
+	u8 value;
+	if (irq<8)
+	{
+		port=PIC1_DATA;
+	}
+	else
+	{
+		port=PIC2_DATA;
+		irq-=8;
+	}
+	value=inb(port)|(1<<irq);
+	outb(port,value);
+}
+
+void irq_unmask(irq)
+{
+	u16 port;
+	u8 value;
+	if (irq<8)
+	{
+		port=PIC1_DATA;
+	}
+	else
+	{
+		port=PIC2_DATA;
+		irq-=8;
+	}
+	value=inb(port)&(~(1<<irq));
+	outb(port,value);
+
+}
+
 struct interrupt_frame {
 	u32 eip;
 	u32 cs;
@@ -97,9 +138,14 @@ struct interrupt_frame {
 
 isr void unknown_isr(struct interrupt_frame *frame)
 {
+	int_stop();
+
 	if (this_int()!=1)
-		printk("intr %x\n",this_int());
+	{
+	printk("intr %x\n",this_int());
+	}
 	int_ack();
+	int_start();
 	return;
 }
 
@@ -195,7 +241,8 @@ void (*faults[])(struct interrupt_frame,u32)=
 	invalid_seg,
 	gpe, 
 	page_fault, //Page fault.This will be a very big handler.
-	unknown_isr //x87 error.
+	unknown_isr, //x87 error.
+	unknown_isr
 };
 
 
@@ -209,29 +256,34 @@ void idt_write(struct idt_desc *this,u32 func,u8 type,u8 ring)
 	this->ring	= ring;
 	this->present	= 1;
 	this->offset_h  = (func&0xFFFF0000)>>16;
+	asm volatile("mfence":::"memory");
 	return;
 }
 
-struct idt_desc IDT[256];
+volatile struct idt_desc IDT[256];
 
 void idt_load(struct idt_entry *entry,struct idt_desc *idt,u32 limit)
 {
-	entry->limit=limit*16-1;
+	entry->limit=limit*8-1;
 	entry->addr=idt;
-	asm volatile("lidt (%0)"::"d"(entry):);
+	asm volatile("mfence;lidt (%0)"::"d"(entry):"memory");
 	return;
 }
+
 
 void intr_init(void)
 {
 	for (u32 i=0;i<=0x10;i++)
-		idt_write(IDT+i,faults[i],ISR_INTR,0);
+		idt_write(IDT+i,faults[i],ISR_TRAP,0);
 	for (u32 i=0x11;i<255;i++)
 	{
 		idt_write(IDT+i,unknown_isr,ISR_INTR,0);
 	}
+	idt_write(IDT+0x20+0x4,serial_handler,ISR_INTR,0);
 	idt_load(&idt_entry,IDT,255);
 	pic_init();	
+	for (int i=0;i<=16;i++)
+		irq_unmask(i);
 	printk("IDT at %x\n",&idt_entry);
 	return;
 }
@@ -245,8 +297,10 @@ void idt_reload(void)
 void set_intr(int n,void (*func)(struct interrupt_frame,u32))
 {
 	idt_write(IDT+n,func,ISR_INTR,0);
+	idt_reload();
 	return ;
 }
+
 
 void pic_remap(int off1,int off2)
 {

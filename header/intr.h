@@ -1,6 +1,6 @@
 #define ISR_TRAP 0xf
 #define ISR_INTR 0xe
-extern struct idt_desc *IDT;
+volatile extern struct idt_desc *IDT;
 struct interrupt_frame
 {
 	u32 eip;

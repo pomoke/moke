@@ -33,9 +33,11 @@ void halt(void)
 
 void reboot_tflt(void)
 {
-	idt_write(IDT+8,0,0xe,0);
-	idt_write(IDT+80,0,0xe,0);
-	//idt_reload();
+	//idt_write(IDT+8,0,0xe,0);
+	//idt_write(IDT+80,0,0xe,0);
+	for (int i=0;i<=255;i++)
+		idt_write(IDT+i,0,0xe,0);
+	idt_reload();
 	asm volatile("int $80;":::);
 	return;
 } __attribute__((noreturn));

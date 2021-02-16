@@ -145,6 +145,7 @@ asmlink void spin_up(void)
 	while (x<400000000)
 		x++;
 	x=0;
+
 	int_start();
 	//Test palloc() and pfree() 
 	struct date date;
@@ -160,16 +161,13 @@ asmlink void spin_up(void)
 	printk("allocing pages from %x...\n",palloc(10,0));
 	kalloc_setup();
 	kalloc_test();
-	//pgalloc_test();
 	char *p1=pgalloc(32);
-	//printk("%x\n",p1);
-	//char a;
-	//printk("%x\n",&a);
 	printk("page free: %d MB\n",page_get_free()/1024/1024);
-	//x=x/x;
-	for (;;);
 	//panic("Nothing to do.\n");
 	//halt();
+	x=0;
+	//printk("%d\n",x/x);	
+	for (;;);
 
 
 }

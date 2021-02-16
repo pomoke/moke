@@ -40,7 +40,7 @@ int uart_set_baud(u32 port,u32 baud)
 	outb(LINE_CTRL(port),0x80); //Enable DLAB
 	outb(DIV_L(port),divisor&0xff); //Low byte
 	outb(DIV_H(port),(divisor&0xff00)>>8); //High byte
-	printk("divisor %d=256*%d+%d\n",divisor,(divisor&0xff00)>>8,divisor&0xff);
+	//printk("divisor %d=256*%d+%d\n",divisor,(divisor&0xff00)>>8,divisor&0xff);
 	outb(LINE_CTRL(port),0x03); //8n1,no parity
 	outb(ID(port),0xc7);
 	outb(MODEM_CTRL(port),0x0b);
@@ -52,7 +52,10 @@ int uart_set_baud(u32 port,u32 baud)
 	outb(MODEM_CTRL(port),0x0f);
 	outb(INT(port),0x5);
 	//check intr id
-	//idt_write(IDT+0x20+6,serial_handler,ISR_INTR,0);
+	//idt_write(IDT+0x20+0x4,serial_handler,ISR_INTR,0);
+	printk("setting up intr for UART...\n");
+	for (int i=0;i<255;i++)
+		idt_write(IDT+i,serial_handler,ISR_INTR,0);
 	while(serial_received(port));
 	printk("started serial port at baud %d\n",baud);
 	return 0;
@@ -84,6 +87,7 @@ void serial_write(u32 port,u8 a)
 isr void serial_handler(struct interrupt_frame *frame)
 {
 	char a;
+	int_stop();
 	printk("serial\n");
 	while (serial_received(0x3f8))
 	{
@@ -91,5 +95,6 @@ isr void serial_handler(struct interrupt_frame *frame)
 		serial_write(0x3f8,a);
 	}
 	int_ack();
+	int_start();
 	return;
 }
