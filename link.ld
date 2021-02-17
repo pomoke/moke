@@ -1,5 +1,5 @@
 ENTRY(loader)                /* the name of the entry label */
-
+OUTPUT_ARCH(i486:x86-64)
 SECTIONS {
     . = 0x00100000;          /* the code should be loaded at 1 MB */
 

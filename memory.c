@@ -33,6 +33,10 @@ struct alloc {
 	struct alloc *next;
 };
 
+struct alloc_table {
+	u8 status[64];
+	struct alloc item[64];
+};
 struct alloc *alloc_list,pre[100];
 
 struct pre_zone {
@@ -87,11 +91,27 @@ void pre_assign_area(u32 len) //This area is used for allocation requests from m
 	return;
 }
 
+struct alloc_table *alloc_table;
+
 void * mem_alloc(u32 size)
 {
-	void *p=pre_zone.addr+pre_zone.len-size-pre_zone.used;
-	pre_zone.used+=size;
-	return p;
+	if(!alloc_table)
+	{
+		void *p=pre_zone.addr+pre_zone.len-size-pre_zone.used;
+		pre_zone.used+=size;
+		return p;
+	}
+	else
+	{
+		u32 p=0;
+		for (int i=0;i<64;i++)
+			if (!alloc_table->status[i])
+			{
+				alloc_table->status[i]++;
+				return &(alloc_table->item[i]);
+			}
+		return (void *)p;
+	}
 }
 /* addr is always 8-byte aligned,so the 0-2 bit is used to mark usage.
  *
@@ -126,14 +146,22 @@ void kalloc_add_region(void * addr,u32 len)
 		}
 	return;
 }
+void mem_alloc_zone_add(void)
+{
+	alloc_table=kalloc(sizeof(struct alloc_table),0);
+	return;
+}
+
 void kalloc_setup(void)
 {
 	printk("Setting up kalloc...\n");
 	kalloc_init();
 	void *p=pgalloc(16);
 	kalloc_add_region(p,16*PAGE_SIZE);
+	mem_alloc_zone_add();
 	return;
 }
+
 
 void * kalloc(u32 size,u32 type)
 {
@@ -142,6 +170,8 @@ void * kalloc(u32 size,u32 type)
 	if (type==ALLOC_MEM)
 		//return mem_alloc(size);
 		return mem_alloc(size);
+	if (size>=4096)
+		return pgalloc(size&0xfffff000 + !!(size&0xfff)*4096);
 	void * alloc=NULL;
 	int cnt=2; //We have two chances to scan through the allocation list.
 	int flag=0;

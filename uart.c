@@ -88,10 +88,12 @@ isr void serial_handler(struct interrupt_frame *frame)
 {
 	char a;
 	int_stop();
-	printk("serial\n");
+	//printk("serial\n");
 	while (serial_received(0x3f8))
 	{
 		a=serial_read(0x3f8);
+		if (a==27)
+			serial_write(0x3f8,'\r');
 		serial_write(0x3f8,a);
 	}
 	int_ack();

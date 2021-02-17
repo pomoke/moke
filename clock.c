@@ -3,6 +3,7 @@
 #include "header/kprint.h"
 #include "header/intr.h"
 #include "header/cmos.h"
+#include <bcd.h>
 
 //RTC wall clock
 struct date {
@@ -30,12 +31,12 @@ void rtc_init(void)
 
 struct date * rtc_read(struct date * this) //Assume we are in the 21th century!
 {
-	this->year	=cmos_read(0x09);
-	this->month	=cmos_read(0x08);
-	this->day	=cmos_read(0x07);
-	this->weekday	=cmos_read(0x06);
-	this->hour	=cmos_read(0x04);
-	this->minute	=cmos_read(0x02);
-	this->second	=cmos_read(0x00);
+	this->year	=BCD_TO_INT(cmos_read(0x09));
+	this->month	=BCD_TO_INT(cmos_read(0x08));
+	this->day	=BCD_TO_INT(cmos_read(0x07));
+	this->weekday	=BCD_TO_INT(cmos_read(0x06));
+	this->hour	=BCD_TO_INT(cmos_read(0x04));
+	this->minute	=BCD_TO_INT(cmos_read(0x02));
+	this->second	=BCD_TO_INT(cmos_read(0x00));
 	return this;
 }

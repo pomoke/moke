@@ -1,4 +1,5 @@
 ENTRY(loader)                /* the name of the entry label */
+/*OUTPUT_ARCH(i686)*/
 
 SECTIONS {
     . = 0x00100000;          /* the code should be loaded at 1 MB */
