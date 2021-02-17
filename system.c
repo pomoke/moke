@@ -167,6 +167,7 @@ asmlink void spin_up(void)
 	//halt();
 	x=0;
 	//printk("%d\n",x/x);	
+	clock_now();
 	for (;;);
 
 
