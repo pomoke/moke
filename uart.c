@@ -54,8 +54,6 @@ int uart_set_baud(u32 port,u32 baud)
 	//check intr id
 	//idt_write(IDT+0x20+0x4,serial_handler,ISR_INTR,0);
 	printk("setting up intr for UART...\n");
-	for (int i=0;i<255;i++)
-		idt_write(IDT+i,serial_handler,ISR_INTR,0);
 	while(serial_received(port));
 	printk("started serial port at baud %d\n",baud);
 	return 0;

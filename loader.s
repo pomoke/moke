@@ -15,7 +15,7 @@
 		movl %eax,(boottype)
 		movl %ebx,(mbinfo)
 
-	jmp spin_up
+	call spin_up
 
 loop:
 	jmp loop

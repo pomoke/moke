@@ -52,6 +52,8 @@ void kprint(char *str,i16 target,i16 level)
 	return;
 }
 char conv[]="0123456789abcdef";
+char * nullptr=0;
+char * vnullptr=0xc0000000;
 void kprint_n(u32 n,i16 target,i16 level)
 {
 	char s[9];
@@ -135,7 +137,7 @@ asmlink void spin_up(void)
 	*p=3;
 	//p=0xe0000000;
 	//*p=4;
-	printk("p=%x\n",*p);
+	//printk("p=%x\n",*p);
 	x=0;
 	//for (int i=0;i<20;i++)
 	//	printk("alloc:%x\n",palloc(5000));
@@ -150,7 +152,7 @@ asmlink void spin_up(void)
 	//Test palloc() and pfree() 
 	struct date date;
 	rtc_read(&date);
-	kprint(week[date.weekday-1],PR_VGA,INFO);
+	//kprint(week[date.weekday-1],PR_VGA,INFO);
 	int c=0;
 	//panic("Nothing to do.");
 	uart_set_baud(0x3f8,38400);
@@ -167,9 +169,14 @@ asmlink void spin_up(void)
 	//halt();
 	x=0;
 	//printk("%d\n",x/x);	
-	clock_now();
+	//clock_now();
+	printk("0xc0100000->%x\n",get_physical(0xc0100000));
+	for (int i=0;i<10000;i++)
+	{
+		p1=kalloc(16,0);
+		printk("%d:malloc(16)=%x\n",i,p1);
+	}
 	for (;;);
-
 
 }
 

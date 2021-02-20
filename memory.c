@@ -34,8 +34,9 @@ struct alloc {
 };
 
 struct alloc_table {
-	u8 status[64];
 	struct alloc item[64];
+	u8 len;
+	u8 status[64];
 };
 struct alloc *alloc_list,pre[100];
 
@@ -92,7 +93,7 @@ void pre_assign_area(u32 len) //This area is used for allocation requests from m
 }
 
 struct alloc_table *alloc_table;
-
+u8 in_memzone;
 void * mem_alloc(u32 size)
 {
 	if(!alloc_table)
@@ -105,11 +106,24 @@ void * mem_alloc(u32 size)
 	{
 		u32 p=0;
 		for (int i=0;i<64;i++)
-			if (!alloc_table->status[i])
+			if (alloc_table->status[i]==0)
 			{
+				alloc_table->len++;
 				alloc_table->status[i]++;
-				return &(alloc_table->item[i]);
+				p=&(alloc_table->item[i]);
+				break;
 			}
+		if (p==0)
+		{
+			printk("No more zone! len %d in %d\n",alloc_table->len,in_memzone);
+		}
+		if (alloc_table->len==58 && !in_memzone)
+		{
+			in_memzone=1;
+			printk("adding zone...\n");
+			mem_alloc_zone_add();
+			in_memzone=0;
+		}
 		return (void *)p;
 	}
 }
@@ -148,12 +162,15 @@ void kalloc_add_region(void * addr,u32 len)
 }
 void mem_alloc_zone_add(void)
 {
+	printk("Adding zone......\n");
 	alloc_table=kalloc(sizeof(struct alloc_table),0);
+	clear(alloc_table,sizeof(struct alloc_table));
 	return;
 }
 
 void kalloc_setup(void)
 {
+	in_memzone=0;
 	printk("Setting up kalloc...\n");
 	kalloc_init();
 	void *p=pgalloc(16);
@@ -197,14 +214,17 @@ try_alloc:
 	{
 		cnt--;
 		//Get some pages from page allocator.
+		printk("Adding page...\n");
 		char *p=pgalloc(16);
 		kalloc_add_region(p,16*PAGE_SIZE);
 		goto try_alloc;
 	}
+	/*
 	if (flag)
 		printk("kalloc(%d->%d)=%x\n",size,n,alloc);
 	else
 		printk("kalloc(%d->%d)=failed\n",size,n);
+	*/
 	return alloc;
 }
 
@@ -253,4 +273,9 @@ void kalloc_test(void)
 	p[1]=kalloc(17,ALLOC_SCHED);
 	printk("kalloc addr %x %x\n",p[0],p[1]);
 	return ;
+}
+
+void *malloc(u32 n)
+{
+	return kalloc(n,0);
 }

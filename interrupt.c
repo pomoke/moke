@@ -214,7 +214,7 @@ isr void page_fault(struct interrupt_frame *frame,u32 errno)
 	}
 	else
 		printk("fault:Attempt to deref NULL pointer at %x.\n",frame->eip);
-	halt();
+	for (;;);
 	return ;
 }
 
@@ -273,9 +273,9 @@ void idt_load(struct idt_entry *entry,struct idt_desc *idt,u32 limit)
 
 void intr_init(void)
 {
-	for (u32 i=0;i<=0x10;i++)
+	for (u32 i=0;i<=17;i++)
 		idt_write(IDT+i,faults[i],ISR_TRAP,0);
-	for (u32 i=0x11;i<255;i++)
+	for (u32 i=18;i<255;i++)
 	{
 		idt_write(IDT+i,unknown_isr,ISR_INTR,0);
 	}
