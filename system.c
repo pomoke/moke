@@ -171,10 +171,9 @@ asmlink void spin_up(void)
 	//printk("%d\n",x/x);	
 	//clock_now();
 	printk("0xc0100000->%x\n",get_physical(0xc0100000));
-	for (int i=0;i<10000;i++)
+	for (int i=0;i<1000000;i++)
 	{
-		p1=kalloc(16,0);
-		printk("%d:malloc(16)=%x\n",i,p1);
+		p1=kalloc(64,0);
 	}
 	for (;;);
 

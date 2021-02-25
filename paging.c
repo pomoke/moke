@@ -114,10 +114,12 @@ void map_page(void *v,void *p) //v->p
 {
 	//Find PD table
 	struct pde *pd=get_cr3();
-	struct pte *pt,*phy;
+	struct pte *pt,*phy=0;
+	//printk("%x->%x\n",v,p);
 	if (!pd[(u32)v>>22].present)
 	{
 		//pt=palloc(1)
+		printk("Allocate page for paging.");
 		phy=palloc(1,0);//Physical address
 		map_page(0xc02fc000,phy);
 		pt=0xc02fc000;
@@ -127,7 +129,15 @@ void map_page(void *v,void *p) //v->p
 		pd[(u32)v>>22].write=1;
 		pd[(u32)v>>22].present=1;
 	}
-	pt=pd[(u32)v>>22].pt<<11;
+	if (pd[(u32)v>>22].pt<<11 < 0x300000)
+	{
+		pt=pd[(u32)v>>22].pt<<11; //Subject to change.
+	}
+	else if (!phy)
+	{
+		map_page(0xc02fc000,pd[(u32)v>>22].pt<<11);
+		pt=0xc02fc000;
+	}
 	pt[((u32)v>>12)&0x3ff].phy=(u32)p>>12;
 	pt[((u32)v>>12)&0x3ff].write=1;
 	pt[((u32)v>>12)&0x3ff].present=1;

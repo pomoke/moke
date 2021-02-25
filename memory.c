@@ -120,7 +120,6 @@ void * mem_alloc(u32 size)
 		if (alloc_table->len==58 && !in_memzone)
 		{
 			in_memzone=1;
-			printk("adding zone...\n");
 			mem_alloc_zone_add();
 			in_memzone=0;
 		}
@@ -162,7 +161,6 @@ void kalloc_add_region(void * addr,u32 len)
 }
 void mem_alloc_zone_add(void)
 {
-	printk("Adding zone......\n");
 	alloc_table=kalloc(sizeof(struct alloc_table),0);
 	clear(alloc_table,sizeof(struct alloc_table));
 	return;
@@ -234,7 +232,7 @@ void * pgalloc(u32 n) //n pages mapped in kernel address space.
 	p=palloc(n,0);
 	v=kva_alloc(n);
 	for (int i=0;i<n;i++)
-		map_page(v+PAGE_SIZE*n,p+PAGE_SIZE*n);
+		map_page(v+PAGE_SIZE*i,p+PAGE_SIZE*i);
 	return v;
 }
 

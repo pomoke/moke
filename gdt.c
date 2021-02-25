@@ -1,5 +1,6 @@
 #include "header/type.h"
 #include "header/func.h"
+#include <kprint.h>
 
 struct gdt_entry {
 	u16 size;
