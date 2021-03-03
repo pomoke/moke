@@ -4,6 +4,8 @@
 #include <list.h>
 #include <mem_internal.h>
 #include <mem.h>
+#include <string.h>
+#include <panic.h>
 /* Memory Allocator */
 
 #define ALLOC_SCHED 0 //May sleep.Do not use in intrs. I:This is the default
@@ -117,6 +119,8 @@ void * mem_alloc(u32 size)
 		{
 			printk("No more zone! len %d in %d\n",alloc_table->len,in_memzone);
 		}
+		//BUG_ON((p || ((u32)p > (u32)alloc_table+sizeof(*alloc_table)) ))
+		BUG_ON((u32)p>(u32)alloc_table+sizeof(*alloc_table))
 		if (alloc_table->len==58 && !in_memzone)
 		{
 			in_memzone=1;
@@ -172,6 +176,7 @@ void kalloc_setup(void)
 	printk("Setting up kalloc...\n");
 	kalloc_init();
 	void *p=pgalloc(16);
+	BUG_ON(!p)
 	kalloc_add_region(p,16*PAGE_SIZE);
 	mem_alloc_zone_add();
 	return;
@@ -189,16 +194,18 @@ void * kalloc(u32 size,u32 type)
 		return pgalloc(size&0xfffff000 + !!(size&0xfff)*4096);
 	void * alloc=NULL;
 	int cnt=2; //We have two chances to scan through the allocation list.
-	int flag=0;
+	//int flag=0;
 	
 try_alloc:
 	FOR_ITEM(alloc_list,i)
 	{
 		if ((i->len >= n) && !(i->len&1) ) //Find a available one.
 		{
-			flag=1;
+			//flag=1;
 			struct alloc *p=kalloc(sizeof(struct alloc),ALLOC_MEM);
 			alloc=i->addr;
+			if (alloc==0xc08ae70)
+				printk("!\n");
 			p->len=n|1;
 			p->next=i;
 			p->prev=i->prev;

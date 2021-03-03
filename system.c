@@ -174,6 +174,7 @@ asmlink void spin_up(void)
 	for (int i=0;i<1000000;i++)
 	{
 		p1=kalloc(64,0);
+		//p1=pgalloc(1);
 	}
 	for (;;);
 

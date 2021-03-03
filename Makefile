@@ -6,7 +6,7 @@ CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
 	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -mno-red-zone -fno-pic\
 	 -isystem $(shell $(CC) -print-file-name=include) \
 	 -isystem $(shell pwd)/header \
-	 -mgeneral-regs-only  
+	 -mgeneral-regs-only -Og 
 #CFLAGS_INTR = -mg 
 LDFLAGS = -Tlink_ng.ld -melf_i386
 AS = as

@@ -46,7 +46,7 @@ void isr pf_handler(struct int_frame * frame)
 
 struct pde *get_cr3(void)
 {
-	struct pde *cr3;
+	volatile struct pde *cr3;
 	asm volatile("mov %%cr3,%%eax":"=r"(cr3)::"memory");
 	return cr3;
 }
