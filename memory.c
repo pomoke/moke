@@ -50,11 +50,21 @@ struct pre_zone {
 
 struct mmap mem_area[MMAP_MAX];
 u32 mem_area_count=0;
+void show_kernel_zone(void)
+{
+	printk("mem: .text.early %x-%x len %d\n",&_early_text,&_end_early_text,(u32)&_end_early_text-(u32)&_early_text);
+	printk("mem: .text %x-%x len %d\n",&_text,&_end_text,(u32)&_end_text-(u32)&_end_text);
+	printk("mem: .rodata %x-%x len %d\n",&_rodata,&_end_rodata,(u32)&_end_rodata-(u32)&_rodata);
+	printk("mem: .data %x-%x len %d\n",&_data,&_end_data,(u32)&_end_data-(u32)&_data);
+	printk("mem: .bss %x-%x len %d\n",&_bss,&_end_bss,(u32)&_end_bss-(u32)&_bss);
+	return;
+}
 
 void mem_init(void)
 {
 	//Count usable pages.
 	u32 count=0;
+	//show_kernel_zone();
 	for (u32 i=0;i<mem_area_count;i++)
 		count+=(mem_area[i].to-mem_area[i].from)/0x1000;
 	printk("mem: total avail pages %d\n",count);
