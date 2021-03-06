@@ -86,6 +86,24 @@ u32 get_physical(u32 virtual)
 	}
 
 }
+u32 get_pg_item(u32 virtual)
+{
+	struct pde *dir;
+	dir=get_cr3()+0xc0000000;
+	printk("paging: cr3 at %x,",dir,sizeof(struct pde));
+	//Translate this dir.
+	struct pte *item;
+	if (!dir[virtual>>22].present)
+	{
+		printk("paging:No such mapping for %x.\n",virtual);
+		return 0;
+	}
+	else
+	{
+		item=(dir[virtual>>22].pt)<<11;
+		return item;
+	}	
+}
 void flush_page(void *virtual)
 {
 	asm volatile("invlpg (%0)"::"r"(virtual):"memory");
@@ -94,8 +112,8 @@ void flush_page(void *virtual)
 
 void invalidate_page(void *virtual)
 {
-	//struct pte *a=get_pg_item(virtual);
-	struct pte *a=0;
+	struct pte *a=get_pg_item(virtual);
+	//struct pte *a=0;
 	a->present=0;
 	//asm volatile("invlpg (%0)"::"r"(virtual):"memory");
 	flush_page(virtual);

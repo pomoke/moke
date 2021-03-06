@@ -4,6 +4,7 @@ SECTIONS {
     . = 0x00100000;          /* the code should be loaded at 1 MB */
     PROVIDE(_at=.);
     PROVIDE(_early_text=.);
+
     .text.early ALIGN (0x1000):
     {
 	    *(.text.early)

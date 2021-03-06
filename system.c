@@ -74,28 +74,29 @@ asmlink void spin_up(void)
 	u8 *fb=(u8 *)0xb8000;
 	for (int i=0;i<25*80;i++)
 		fb[2*i]=' ';
-	kprint("Hello\n",PR_VGA,INFO);
-	kprint("MOKE v0.0.1 by pomoke\n",PR_VGA,KERN);
-	kprint("Number tests:",PR_VGA,INFO);
-	kprint_n(13,PR_VGA,INFO);
-	kprint(" ",PR_VGA,INFO);
-	kprint_n(64,PR_VGA,INFO);
-	kprint("\n",PR_VGA,INFO);
+	//kprint("Hello\n",PR_VGA,INFO);
+	//kprint("MOKE v0.0.1 by pomoke\n",PR_VGA,KERN);
+	//kprint("Number tests:",PR_VGA,INFO);
+	//kprint_n(13,PR_VGA,INFO);
+	//kprint(" ",PR_VGA,INFO);
+	//kprint_n(64,PR_VGA,INFO);
+	//kprint("\n",PR_VGA,INFO);
 	if (boottype!=0x2badb002) 
 	{
-		kprint("Error:not booted by multiboot1 loader!\nSystem halted.",PR_VGA,ERROR);
+		printk("Error:not booted by multiboot1 loader!\nSystem halted.");
 		for (;;) ;
 	}
-	kprint("Conforming to multiboot standard\n",PR_VGA,KERN);
-	kprint("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n",PR_VGA,WARN);
+	printk("Conforming to multiboot standard\n");
+	printk("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n");
 	//print("H\n",PR_VGA,WARN);
 	void *gdt_e,*gdt;
 	//setup_gdt(&gdt_e,&gdt);
-	kprint("GDT at ",PR_VGA,INFO);
-	kprint_n((u32)gdt_e,PR_VGA,INFO);
-	kprint(" ",PR_VGA,INFO);
-	kprint_n((u32)gdt,PR_VGA,INFO);
-	kprint(" is loaded\n",PR_VGA,INFO);
+	//kprint("GDT at ",PR_VGA,INFO);
+	//kprint_n((u32)gdt_e,PR_VGA,INFO);
+	//kprint(" ",PR_VGA,INFO);
+	//kprint_n((u32)gdt,PR_VGA,INFO);
+	//kprint(" is loaded\n",PR_VGA,INFO);
+	printk("GDT at %x\n",(u32)gdt_e);
 	printk("CPU vendor: %s\n",cpuid_vendor());
 	x=0;
 	while (x<400000000)
@@ -120,6 +121,8 @@ asmlink void spin_up(void)
 	printk("%x\n",get_physical(0x0));
 	init_mmap(mbinfo);
 	pgalloc_init();
+	//Unset 0x0
+	invalidate_page(0);
 	kva_init();
 	volatile char *q;
 	//for (int i=0;i<10;i++)
@@ -177,6 +180,7 @@ asmlink void spin_up(void)
 		//p1=kalloc(64,0);
 		//p1=pgalloc(1);
 	}
+	printk("%x",*(int *)x);
 	for (;;);
 
 }

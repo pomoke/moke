@@ -63,7 +63,7 @@
 	.globl early_paging
 	early_paging:
 
-		mov $(1024*3),%ecx
+		mov $(1024*4),%ecx
 		xor %eax,%eax
 		xor %edi,%edi
 		cld
@@ -73,13 +73,13 @@
 		/*
 		 A PD entry represents 4M,a PTE maps 4K. 10-10-12
 		*/
-		movl $(3+0x1000),%eax ;//(pt + present user rw)
-		movl %eax,(0x0) ;//Setup PD.[0x0->0x0,4M]
-		movl %eax,(768*4) ;//Setup PD. [0xc0000000->0x0,4M]
+		movl $(3+0x2000),%eax ;//(pt + present user rw)
+		movl %eax,(0x0+0x1000) ;//Setup PD.[0x0->0x0,4M]
+		movl %eax,(768*4+0x1000) ;//Setup PD. [0xc0000000->0x0,4M]
 
 		//PTEs begin at 0x1000 to 0x3000.
 		movl $(0x400000-0x1000+3),%eax ;//End address + (rw kern p)
-		movl $(0x2000-4),%edi
+		movl $(0x3000-4),%edi
 		std
 
 	fill_table:
@@ -88,7 +88,8 @@
 		jge fill_table
 
 		//movl $0x0,(0x1000)
-		xor %eax,%eax
+		//xor %eax,%eax
+		mov $0x1000,%eax;
 		mov %eax,%cr3
 		mov %cr0,%eax
 		or $0x80000000,%eax ;//Enable paging bit
