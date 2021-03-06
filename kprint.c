@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #define PRINT_BUF_SIZE 512
 static char pbuf[PRINT_BUF_SIZE];
-static int kprint_target;
+static int kprint_target=1;
 static char hex[]="0123456789abcdef";
 void vprintk(char *fmt,va_list args)
 {
@@ -65,7 +65,21 @@ void vprintk(char *fmt,va_list args)
 		p++;
 	}
 	*q='\0';
-	kprint(pbuf,PR_VGA,KERN);
+	if (kprint_target==0)
+		kprint(pbuf,PR_VGA,KERN);
+	else
+	{
+		char *ptr=pbuf;
+		while (*ptr)
+			if (*ptr!='\n')
+				serial_write(0x3f8,*ptr++);
+			else
+			{
+				serial_write(0x3f8,'\r');
+				serial_write(0x3f8,'\n');
+				ptr++;
+			}
+	}
 	return;
 }
 void printk(char *fmt,...)
