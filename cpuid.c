@@ -21,9 +21,16 @@ char * cpuid_vendor(void)
 	return vendor;
 }
 
-int cpuid_feature(int feature)
+u32 cpuid_feature(u32 feature)
 {
 	u32 eax,unused,edx;
 	__cpuid(1,&eax,&unused,&edx);
 	return edx&feature;
+}
+
+u32 cpuid_feature_cx(u32 feature)
+{
+	u32 eax,ecx,edx;
+	__cpuid(1,&eax,&ecx,&edx);
+	return ecx&feature;
 }

@@ -282,7 +282,7 @@ void intr_init(void)
 	idt_write(IDT+0x20+0x4,serial_handler,ISR_INTR,0);
 	idt_load(&idt_entry,IDT,255);
 	pic_init();	
-	for (int i=0;i<=16;i++)
+	for (int i=1;i<=16;i++)
 		irq_unmask(i);
 	printk("IDT at %x\n",&idt_entry);
 	return;

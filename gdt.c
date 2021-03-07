@@ -30,7 +30,7 @@ struct gdt_t {
 } __attribute__((packed));
 
 struct gdt_entry GDT_ENTRY;
-struct gdt_t GDT[4];
+struct gdt_t GDT[6];
 /* 
  * We only use protected mode,page-wise and entries grow up.No cross-ring calls as well.
  */
@@ -68,6 +68,8 @@ void setup_gdt(void ** gdt_e,void ** gdt)
 	write_gdt(GDT+1,0x0,0xFFFFFFFF,1,0,1,1);
 	write_gdt(GDT+2,0x0,0xFFFFFFFF,1,0,1,0);
 	write_gdt(GDT+3,0x0,0xFFFFFFFF,1,0,1,0);
+	write_gdt(GDT+4,0x0,0xFFFFFFFF,1,3,1,1);
+	write_gdt(GDT+5,0x0,0xFFFFFFFF,1,3,1,0);
 	GDT_ENTRY.addr=(u32)GDT;
 	GDT_ENTRY.size=4*8-1;
 	asm volatile("lgdt (%0)"::"d"(&GDT_ENTRY):);
