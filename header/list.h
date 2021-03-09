@@ -35,7 +35,7 @@
 		}
 
 #define APPEND_ITEM(a,b)\
-	(a)->next=(b)\
+	(a)->next=(b);\
 	(b)->prev=(a)\
 
 #define PREV(a) ((a))->prev
