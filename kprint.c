@@ -30,6 +30,7 @@ void vprintk(char *fmt,va_list args)
 					  q+=8;
 					  break;
 				case 'd':
+				case 'u':
 					  tmp=va_arg(args,u32);
 					  for (i=ibuf+10;i>=ibuf;i--)
 					  {

@@ -11,8 +11,10 @@
  *
  */
 #define DEL_ITEM(item) \
-	(item)->prev->next=(item)->next;\
-	(item)->next->prev=(item)->prev;\
+	if ((item)->prev)\
+		(item)->prev->next=(item)->next;\
+	if ((item)->next)\
+		(item)->next->prev=(item)->prev;\
 
 #define FREE_ITEM(item) \
 	DEL_ITEM(item)\
@@ -25,7 +27,16 @@
 //#define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b->next ;b=b->next ) WRONG!
 #define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b ;b=b->next )
 
+#define FOR_APPEND(a,b)\
+	for (typeof((a)) _i=(a);_i;_i->next)\
+		if (!_i->next)\
+		{\
+			APPEND_ITEM(_i,a);\
+		}
 
+#define APPEND_ITEM(a,b)\
+	(a)->next=(b)\
+	(b)->prev=(a)\
 
 #define PREV(a) ((a))->prev
 
