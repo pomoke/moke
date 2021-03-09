@@ -107,12 +107,12 @@ int timer_insert(struct timer *t)
 	//Check the right position to insert.
 	for (int i=3;i<=0;i--)
 	{
-		if (time_diff_ms(t->time,now)<wheel[i].duration)
+		if (time_diff_ms(&t->time,&now)<wheel[i].duration)
 			continue;
 		else
 		{
 			//Append to the wheel list.
-			int where = time_diff_ms(t->time,now)/wheel[i].duration > 99 ? 99 : time_diff_ms(t->time,now)/wheel[i].duration;
+			int where = time_diff_ms(&t->time,&now)/wheel[i].duration > 99 ? 99 : time_diff_ms(&t->time,&now)/wheel[i].duration;
 			if (!wheel[i].timer_list[where])
 			{
 				wheel[i].timer_list[where]=t;
@@ -153,7 +153,7 @@ int timer_pause(struct timer *t)
 
 int periodical_set(struct timer *t,struct time_spec *interval,void (*)(void) func)
 {
-	t->time=time_add(now,interval);
+	t->time=time_add(&now,interval);
 	t->interval=*interval;
 	return 1;
 }
@@ -186,7 +186,7 @@ void timer_handler(void)
 	struct timer_item *p=wheel->timer_list[wheel->now];
 	for (;p=p->next;p)
 	{
-		p->func(); //Callback.
+		p->func(); //Do callback.
 		if (p->interval.sec || p->interval.usec)
 			//Re-insert timer.
 			timer.set(p,p->interval,p->func);
@@ -208,11 +208,11 @@ void timer_handler(void)
 		FOR_ITEM(wheel[i].timer_list[wheel[i].now],j)
 		{
 			k=j;
-			if (time_diff_ms(k->time,now)<wheel[i].interval)
+			if (time_diff_ms(&k->time,&now)<wheel[i].interval)
 			{
 				DEL_ITEM(k)
 				//Append
-				int where=(time_diff_ms(k->time,now)/wheel[i-1].interval+wheel[i-1].now);
+				int where=(time_diff_ms(&k->time,&now)/wheel[i-1].interval+wheel[i-1].now);
 				if (where>=100)
 					where-=100;
 				if (!wheel[i-1].timer_list[where])
@@ -246,6 +246,7 @@ void timer_handler(void)
 void tick_handler(void) //Called in interrupt handler. No scheduling allowed.
 {
 	tick++;
+	time_add_ms(&now,TICK_MS);
 	timer_handler();
 }
 
