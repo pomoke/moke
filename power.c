@@ -24,12 +24,18 @@ void poweroff_qemu()
 	outw(0x604,0x2000);
 }
 
-void halt(void)
+void _halt(void)
 {
 	int_stop();
 	asm volatile("hlt");
 	return;
 } __attribute__((noreturn));
+
+void halt(void)
+{
+	printk("System halted. Push power button to shutdown the computer.\n");
+	_halt();
+}
 
 void reboot_tflt(void)
 {

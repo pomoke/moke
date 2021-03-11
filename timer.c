@@ -160,7 +160,7 @@ int timer_pause(struct timer *t)
 
 int periodical_set(struct timer *t,struct time_spec *interval,void (*func)(void))
 {
-	t->time=time_add(&now,&interval);
+	t->time=time_add(&now,interval);
 	t->interval=*interval;
 	return 1;
 }
@@ -192,6 +192,7 @@ void timer_handler(void)
 	//Check the wheel for deadlines.
 	//struct timer_item *p=wheel->timer_list[wheel->now];
 	for (int i=0;i<=TICK_MS-1;i++)
+	{
 		for (struct timer *p=wheel->timer_list[wheel->now+i>=100 ? wheel->now+i-99 : wheel->now+i];p;p=p->next)
 		{
 			p->func(); //Do callback.
@@ -204,10 +205,10 @@ void timer_handler(void)
 				timer_stop(p);
 			}
 		}
+	}
 	wheel->now++;
 	if (wheel->now>=100)
 		wheel->now=0;
-
 	//Check upper wheels.
 	for (int i=1;i<4;i++)
 	{
@@ -215,8 +216,10 @@ void timer_handler(void)
 		//If a deadline is not longer than lower wheel,the we move it.
 		FOR_ITEM(wheel[i].timer_list[wheel[i].now],j)
 		{
+			if (!j)
+				break;
 			k=j;
-			if (time_diff_ms(&k->time,&now)<wheel[i].unit)
+			if (time_diff_ms(&k->time,&now)<wheel[i].unit) //Problem here.
 			{
 				DEL_ITEM(k)
 				//Append
@@ -245,7 +248,11 @@ void timer_handler(void)
 		}
 		//Increase 'now' value when needed.
 		if (!((ticks*TICK_MS)%wheel[i].unit))
+		{
 			wheel[i].now++;
+			if (wheel[i].now>=100)
+				wheel[i].now=0;
+		}
 
 	}
 	return;

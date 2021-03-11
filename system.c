@@ -180,8 +180,16 @@ asmlink void spin_up(void)
 		//p1=kalloc(64,0);
 		//p1=pgalloc(1);
 	}
-	printk("%x",*(int *)x);
-	for (;;);
+	timer_init();
+
+	for (int i=0;i<200000000;i++)
+	{
+		tick_handler();
+		if (!(i%10000))
+			printk("test %d\n",i);
+
+	}
+	halt();
 
 }
 
