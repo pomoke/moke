@@ -1,11 +1,11 @@
-#include "header/link.h"
-#include "header/type.h"
-#include "header/gdt.h"
-#include "header/kprint.h"
-#include "header/mb.h"
-#include "header/intr.h"
-#include "header/clock.h"
-#include "header/power.h"
+#include <link.h>
+#include <type.h>
+#include <gdt.h>
+#include <kprint.h>
+#include <mb.h>
+#include <intr.h>
+#include <clock.h>
+#include <power.h>
 #include <cpuid.h>
 #include <serial.h>
 #include <mem.h>
@@ -103,15 +103,13 @@ asmlink void spin_up(void)
 	{
 		x++;
 	}
-	kprint("Loaded GDT.\n",PR_VGA,INFO);
+	printk("Loaded GDT.\n");
 	x=0;
 	while (x<400000000)
 	{
 		x++;
 	}
-	kprint("cmdline: ",PR_VGA,INFO);
-	kprint(boot_cmdline(mbinfo),PR_VGA,INFO);
-	kprint("\n",PR_VGA,INFO);
+	printk("cmdline: %s",boot_cmdline(mbinfo));
 	intr_init();
 	printk("ISR ready.\n");
 	x=0;
@@ -181,11 +179,10 @@ asmlink void spin_up(void)
 		//p1=pgalloc(1);
 	}
 	timer_init();
-
 	for (int i=0;i<200000000;i++)
 	{
 		tick_handler();
-		if (!(i%10000))
+		if (!(i%10000000))
 			printk("test %d\n",i);
 
 	}

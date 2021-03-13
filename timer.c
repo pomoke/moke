@@ -59,7 +59,15 @@ void time_add_ms(struct time_spec *dst,u32 msec)
 
 struct time_spec time_add(struct time_spec *a,struct time_spec *b)
 {
-	return ;
+	struct time_spec ret;
+	ret->sec=a->sec+b->sec;
+	ret->nsec=a->nseb->nsec;
+	if (ret->nsec / S_PER_NS)
+	{
+		ret->sec	+= ret->nsec / S_PER_NS;
+		ret->nsec	=  ret->nsec % S_PER_NS;
+	}
+	return ret;
 }
 struct timer {
 	struct time_spec time;

@@ -33,7 +33,8 @@ void _halt(void)
 
 void halt(void)
 {
-	printk("System halted. Push power button to shutdown the computer.\n");
+	printk("\n----HALT----\n");
+	printk("System halted. It is now safe to power off the computer.\n");
 	_halt();
 }
 
