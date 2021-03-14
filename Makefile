@@ -1,12 +1,12 @@
 CC = gcc
 SHELL = bash
 OBJECTS = system.o loader_ng.o vga.o gdt.o mb.o interrupt.o cmos.o clock.o kprint.o power.o panic.o uart.o memory.o pgalloc.o cpuid.o\
-	  paging.o vaalloc.o timer.o
+	  paging.o vaalloc.o timer.o string.o
 CFLAGS = -m32 -nostdlib -fno-builtin -fno-stack-protector \
 	 -nostartfiles -nodefaultlibs -Wall -Wextra -c -g -mno-red-zone -fno-pic\
 	 -isystem $(shell $(CC) -print-file-name=include) \
 	 -isystem $(shell pwd)/header \
-	 -mgeneral-regs-only -Og 
+	 -mgeneral-regs-only -O0 
 #CFLAGS_INTR = -mg 
 LDFLAGS = -Tlink_ng.ld -melf_i386
 AS = as
@@ -15,6 +15,9 @@ ASFLAGS = --32 -gstabs
 .PHONY : clean
 
 all : kernel
+
+show-include : 
+	$(CC) $(CFLAGS) -v  -x c -
 
 kernel : $(foreach i,$(OBJECTS),build/$(i))
 	ld $(LDFLAGS) $(foreach i,$(OBJECTS),build/$(i)) -o moke

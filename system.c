@@ -179,11 +179,13 @@ asmlink void spin_up(void)
 		//p1=pgalloc(1);
 	}
 	timer_init();
+	timer_test();
 	for (int i=0;i<200000000;i++)
 	{
 		tick_handler();
 		if (!(i%10000000))
-			printk("test %d\n",i);
+			//printk("test %d\n",i);
+			;
 
 	}
 	halt();
