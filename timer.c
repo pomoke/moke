@@ -49,7 +49,8 @@ int time_diff_ms(struct time_spec *a,struct time_spec *b)
 
 void time_add_ms(struct time_spec *dst,u32 msec)
 {
-	dst->nsec+=msec*MS_PER_NS;
+	dst->nsec+=(msec%1000)*MS_PER_NS;
+	dst->sec+=(msec/1000);
 	if (dst->nsec / S_PER_NS)
 	{
 		dst->sec += dst->nsec / S_PER_NS;
@@ -62,12 +63,13 @@ struct time_spec time_add(struct time_spec *a,struct time_spec *b)
 {
 	struct time_spec ret;
 	ret.sec=a->sec+b->sec;
-	ret.nsec=a->nsec;
+	ret.nsec=a->nsec+b->nsec;
 	if (ret.nsec / S_PER_NS)
 	{
 		ret.sec		+= ret.nsec / S_PER_NS;
 		ret.nsec	=  ret.nsec % S_PER_NS;
 	}
+	printk("%ds%dns+%ds%dns=%ds%dns\n",a->sec,a->nsec,b->sec,b->nsec,ret.sec,ret.nsec);
 	return ret;
 }
 struct timer {
@@ -81,7 +83,7 @@ struct timer {
 
 void timer_dump(struct timer *p)
 {
-	printk("expire %d s,%d ms\n",p->time.sec,p->time.nsec/MS_PER_NS);
+	//printk("expire %d s,%d ms\n",p->time.sec,p->time.nsec/MS_PER_NS);
 	return;
 }
 /* 
@@ -126,10 +128,12 @@ struct timer *timer_create(void)
 
 int timer_insert(struct timer *t)
 {
-	printk("adding timer %x\n",t);
+	printk("adding timer %x at %d s %d ms\n",t,t->time.sec,t->time.nsec/MS_PER_NS);
 	//Check the right position to insert.
 	for (int i=3;i>=0;i--)
 	{
+		if (time_diff_ms(&t->time,&now)<0)
+			break;
 		if (time_diff_ms(&t->time,&now)<wheel[i].unit)
 		{
 			continue;
@@ -137,7 +141,7 @@ int timer_insert(struct timer *t)
 		else
 		{
 			//Append to the wheel list.
-			int where = time_diff_ms(&t->time,&now)/wheel[i].unit > 99 ? 99 : time_diff_ms(&t->time,&now)/wheel[i].unit;
+			int where = time_diff_ms(&t->time, &now) / wheel[i].unit +wheel[i].now> 99 ? time_diff_ms(&t->time,&now)/wheel[i].unit+wheel[i].now-100 : time_diff_ms(&t->time, &now) / wheel[i].unit+wheel[i].now;
 			printk("insert timer %x at level %d %d\n",t,i,where);
 			if (!wheel[i].timer_list[where])
 			{
@@ -162,7 +166,7 @@ int timer_set(struct timer *t,struct time_spec *time,void (*func)(void) )
 {
 	t->time=time_add(&now,time);
 	t->func=func;
-	timer_dump(t);
+	//timer_dump(t);
 	timer_insert(t);
 }
 
@@ -183,13 +187,15 @@ int periodical_set(struct timer *t,struct time_spec *interval,void (*func)(void)
 {
 	t->time=time_add(&now,interval);
 	t->interval=*interval;
+	t->func=func;
+	timer_insert(t);
 	return 0;
 }
 
 int timer_stop(struct timer *t)
 {
 	//Set target time to 0.
-	DEL_ITEM(t);
+	//DEL_ITEM(t);
 	t->time.sec=0;
 	t->time.nsec=0;
 	t->interval.sec=0;
@@ -216,26 +222,47 @@ void timer_handler(void)
 	{
 		for (struct timer *p=wheel->timer_list[wheel->now+i>=100 ? wheel->now+i-99 : wheel->now+i];p;p=p->next)
 		{
-			printk("%ds %dms:",now.sec,now.nsec/MS_PER_NS);
-			p->func(); //Do callback.
-			if (p->interval.sec || p->interval.nsec)
-				//Re-insert timer.
-				timer_set(p,&p->interval,p->func);
-			else
+			if (time_diff_ms(&p->time,&now)<TICK_MS)
 			{
-				printk("invalidating...\n");
-				//Invalidate timer.
+				printk("now %ds %dms,this clock %ds %dms\n",now.sec,now.nsec/MS_PER_NS,p->time.sec,p->time.nsec/MS_PER_NS);
+				p->func(); //Do callback.
 				if (wheel->timer_list[wheel->now+i>=100 ? wheel->now+i-99 : wheel->now+i]==p)
+				{
 					wheel->timer_list[wheel->now+i>=100 ? wheel->now+i-99 : wheel->now+i]=NULL;
-				timer_stop(p);
+				}
+				else
+				{
+					DEL_ITEM(p)
+				}
+
+				if (p->interval.sec || p->interval.nsec)
+					//Re-insert timer.
+				{
+					timer_set(p,&p->interval,p->func);
+				}
+				else
+				{
+					timer_stop(p);
+				}
+					//Invalidate timer.
 			}
+				
+			
 		}
 	}
-	wheel->now++;
-	if (wheel->now>=100)
+	
+	if (!((ticks*TICK_MS)%wheel[0].unit))
+	{
+		wheel->now++;
+		if (wheel->now>=100)
 		wheel->now=0;
+	}
+	
+	//wheel->now+=10;
+	//if (wheel->now>=100)
+		//wheel->now=0;
 	//Check upper wheels.
-	for (int i=1;i<4;i++)
+	for (int i=1;i<=3;i++)
 	{
 		struct timer *k;
 		//If a deadline is not longer than lower wheel,the we move it.
@@ -244,10 +271,8 @@ void timer_handler(void)
 			if (!j)
 				break;
 			k=j;
-			printk("now %ds%dms,timer at %d %d,%d ms!\n",now.sec,now.nsec/MS_PER_NS,i,wheel[i].now,time_diff_ms(&k->time,&now));
 			if (time_diff_ms(&k->time,&now)<=wheel[i].unit) //Problem here
 			{
-				printk("moving\n");
 				DEL_ITEM(k)
 				if (wheel[i].timer_list[wheel[i].now]==k)
 					wheel[i].timer_list[wheel[i].now]=NULL;
@@ -310,16 +335,21 @@ void timer_init(void)
 #ifndef PRODUCTION
 void callback(void)
 {
-    printk("Called!\n");
+    printk("Called by timer at %d sec %d ms!\n",now.sec,now.nsec/MS_PER_NS);
 }
 
 void timer_test()
 {
     struct timer *a=timer_create();
     struct timer *b=timer_create();
-    timer_set(a,&(struct time_spec){.sec=100,.nsec=100},callback);
-    timer_set(b,&(struct time_spec){.sec=10000,.nsec=10000},callback);
-    printk("%d ms\n",time_diff_ms(&(struct time_spec){.sec=12000,.nsec=10},&(struct time_spec){.sec=200,.nsec=1000}));
+	struct timer *c=timer_create();
+    timer_set(a,&(struct time_spec){.sec=1,.nsec=0},callback);
+    timer_set(b,&(struct time_spec){.sec=1000,.nsec=0},callback);
+	periodical_set(c,&(struct time_spec){.sec=10,.nsec=0},callback);
+    //printk("%d ms\n",time_diff_ms(&(struct time_spec){.sec=12000,.nsec=10},&(struct time_spec){.sec=200,.nsec=1000}));
+	//struct time_spec d=time_add(&(struct time_spec){.sec=100,.nsec=3000000},&(struct time_spec){.sec=1000,.nsec=30000000});
+	//printk("%d s %d ns\n",d.sec,d.nsec);
+
     return;
 }
 #endif  
