@@ -1,4 +1,4 @@
-/*
+*
  * TSC clock support for MOKE.
  *
  */

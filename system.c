@@ -180,9 +180,10 @@ asmlink void spin_up(void)
 	}
 	timer_init();
 	timer_test();
+	modules_show();
 	for (int i=0;i<200000000;i++)
 	{
-		tick_handler();
+		//tick_handler();
 		if (!(i%10000000))
 			//printk("test %d\n",i);
 			;

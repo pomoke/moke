@@ -17,6 +17,13 @@ struct mb_mem {
   u32 type;
 } __attribute__((packed));
 
+struct mb_mod {
+  void * mod_start;
+  void * mod_end;
+  char * cmdline;
+  u32 reserved;
+} __attribute__((packed));
+
 struct multiboot {
   int flag;
   //on flag.0
@@ -26,7 +33,7 @@ struct multiboot {
   char * cmdline;
   //On flag.3
   int mods_count;
-  void * mod_addr;
+  struct mb_mod * mod_addr;
   //On flag.4,5
   struct mb_symbol syms;
   //On flag.6
@@ -44,6 +51,7 @@ struct multiboot {
   //No bootloader-based framebuffer-setting currently.
 } __attribute__((packed));
 
+extern struct multiboot *mbinfo;
 char * boot_cmdline(struct multiboot *this)
 {
   return this->cmdline;
@@ -78,3 +86,25 @@ void init_mmap(struct multiboot *this)
   return;
 }
 
+void modules_show(void)
+{
+	if (!(mbinfo->flag & (1<<3)))
+	{
+		printk("mb:This bootloader does not support modules.\n");
+		goto end;
+	}
+	struct mb_mod *a;
+	if (!mbinfo->mods_count)
+	{
+		printk("mb:No module loaded.\n");
+		goto end;
+	}
+	for (int i=0;i<mbinfo->mods_count;i++)
+	{
+		a=mbinfo->mod_addr+i;
+		printk("module at %x len %d cmdline %s\n",a->mod_start,a->mod_end-a->mod_start,a->cmdline);
+
+	}
+end:
+	return;
+}
