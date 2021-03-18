@@ -13,3 +13,4 @@ tags
 build/
 .vscode
 bmoke
+moke.romfs

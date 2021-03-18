@@ -86,7 +86,7 @@ void init_mmap(struct multiboot *this)
   return;
 }
 
-void modules_show(void)
+void modules_init(void)
 {
 	if (!(mbinfo->flag & (1<<3)))
 	{
@@ -103,7 +103,7 @@ void modules_show(void)
 	{
 		a=mbinfo->mod_addr+i;
 		printk("module at %x len %d cmdline %s\n",a->mod_start,a->mod_end-a->mod_start,a->cmdline);
-
+		romfs_init(a->mod_start,a->mod_end-a->mod_start);
 	}
 end:
 	return;
