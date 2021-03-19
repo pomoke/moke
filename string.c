@@ -7,3 +7,11 @@ void clear(void *buf,u32 len)
 		tmp[i]=0;
 	return;
 }
+
+u32 strlen(char *a)
+{
+	int i=0;
+	while (*a++)
+		i++;
+	return i;
+}

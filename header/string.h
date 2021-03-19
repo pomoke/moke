@@ -16,3 +16,5 @@ inline void clear(void * dst,u32 n)
 		p[i]=0;
 	return;
 }
+
+u32 strlen(char *a);

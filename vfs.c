@@ -11,7 +11,7 @@
 
 struct vnode_buf {
 	;
-}
+};
 
 struct vnode {
 	int refcnt;
@@ -20,20 +20,24 @@ struct vnode {
 };
 
 struct stat {
+	int perm;
+};
+
+struct dirent {
 	;
-}
+};
 
 void parse_path(char *path)
 {
 	;
 }
 
-int *open(const char * pathname,int mode,struct *file file)
+int open(const char *pathname,int mode,struct file *file)
 {
 	;
 }
 
-void close(struct *file file)
+void close(struct file *file)
 {
 	;
 }

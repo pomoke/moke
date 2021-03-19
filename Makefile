@@ -43,7 +43,7 @@ cdrom : kernel
 		-boot-info-table \
 		-o moke.iso \
 		iso/ 
-qemu : kernel
+qemu : moke 
 	qemu-system-x86_64 -m 128M -kernel moke
 
 qemu-cd: cdrom
@@ -52,10 +52,14 @@ cd-dbg: cdrom
 	echo Debugger listening at tcp::1234
 	qemu-system-x86_64 -m 512M -cdrom moke.iso -S -gdb tcp::1234
 	#gdb -ex "set arch i386:x86-64" -ex "target remote tcp::1234" moke
-qemu-dbg : kernel
+qemu-dbg : moke
 	qemu-system-x86_64 -m 128M -kernel moke -S -gdb tcp::1234
-kvm : kernel
+kvm : moke
 	kvm -m 128M -kernel moke
+
+kvm-romfs : moke
+	kvm -m 128M -kernel moke -initrd moke.romfs
+
 
 clean : 
 	- rm -rf build/* iso/boot/kernel *.iso moke smoke
