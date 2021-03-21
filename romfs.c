@@ -17,9 +17,14 @@
 //This macro calculate the result of alignment. x: bits
 #define ALIGN(x) ( ((x)&0xfffffff0) + 16*(!!((x)&&0xf)) )
 #define ADDR(offset) \
-	((offset)+(u32)romfs_addr)
+	((u32)(offset)+(u32)romfs_addr)
 
 #define HEADER(x) ((x)&0xfffffff8)
+#define TYPE(x) ((x)==0 ? "link" : (x)==1 ? "dir" : (x)==2 ? "file" :\
+	(x)==3 ? "symlink" : (x==4) ? "block" : (x)==5 ? "char" :\
+	(x)==6 ? "socket" : (x)==7 ? "fifo" : "?")
+#define FOLLOW_LINK(x) (be_32((x)->info))
+#define NEXT_HEADER(x) (((u32)(x)+be_32((x)->next)-1))
 
 enum {
 	ROMFS_LINK=0,
@@ -54,7 +59,27 @@ u32 romfs_len;
 
 void romfs_dump_header(struct header *a)
 {
-	printk("header %x+%d=%x,next +%d,size %d,name %s\n",romfs_addr,(u32)a-(u32)romfs_addr,a,HEADER(be_32(a->next)),be_32(a->size),a->name);
+	struct header *p;
+	printk("header +%d,next +%d,size %d,type %s,name %s\n",(u32)a-(u32)romfs_addr,HEADER(be_32(a->next)),be_32(a->size),TYPE(be_32((u32)a)&0x7),a->name);
+	switch (be_32(a->size) & 0x7)
+	{
+		case ROMFS_LINK:
+			if (!strequ(a->name,".") && !(strequ(a->name,"..")))
+			{
+				p=ADDR(FOLLOW_LINK(a));
+				printk("link target: ");
+				romfs_dump_header(p);
+				break;
+			}
+			else
+			{
+				romfs_dump_header(NEXT_HEADER(a));
+			}
+			break;
+		default:
+				;
+				//romfs_dump_header(NEXT_HEADER(a));
+	}
 }
 
 int romfs_init(char *from,u32 len)

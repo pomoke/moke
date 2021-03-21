@@ -54,10 +54,10 @@ cd-dbg: cdrom
 	#gdb -ex "set arch i386:x86-64" -ex "target remote tcp::1234" moke
 qemu-dbg : moke
 	qemu-system-x86_64 -m 128M -kernel moke -S -gdb tcp::1234
-kvm : moke
+kvm : kernel
 	kvm -m 128M -kernel moke
 
-kvm-romfs : moke
+kvm-romfs : kernel 
 	kvm -m 128M -kernel moke -initrd moke.romfs
 
 
