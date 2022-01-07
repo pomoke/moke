@@ -8,6 +8,7 @@
 #include <power.h>
 #include <cpuid.h>
 #include <serial.h>
+#include <string.h>
 #include <mem.h>
 extern int boottype;
 asmlink i32 sum(i32 a,i32 b,i32 c)
@@ -74,21 +75,15 @@ asmlink void spin_up(void)
 	u8 *fb=(u8 *)0xb8000;
 	for (int i=0;i<25*80;i++)
 		fb[2*i]=' ';
-	//kprint("Hello\n",PR_VGA,INFO);
-	//kprint("MOKE v0.0.1 by pomoke\n",PR_VGA,KERN);
-	//kprint("Number tests:",PR_VGA,INFO);
-	//kprint_n(13,PR_VGA,INFO);
-	//kprint(" ",PR_VGA,INFO);
-	//kprint_n(64,PR_VGA,INFO);
-	//kprint("\n",PR_VGA,INFO);
 	if (boottype!=0x2badb002) 
 	{
 		printk("Error:not booted by multiboot1 loader!\nSystem halted.");
 		for (;;) ;
 	}
+	struct power s;
+	power_init(&s);
 	printk("Conforming to multiboot standard\n");
 	printk("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\n");
-	//print("H\n",PR_VGA,WARN);
 	void *gdt_e,*gdt;
 	//setup_gdt(&gdt_e,&gdt);
 	//kprint("GDT at ",PR_VGA,INFO);
@@ -109,7 +104,16 @@ asmlink void spin_up(void)
 	{
 		x++;
 	}
-	printk("cmdline: %s",boot_cmdline(mbinfo));
+	printk("cmdline: %s\n",boot_cmdline(mbinfo));
+	printk("%x\n",strstr(boot_cmdline(mbinfo),"serial"));
+	if (strstr(boot_cmdline(mbinfo),"serial"))
+	{
+		set_kprint_target(1);
+	}
+	else 
+	{
+		set_kprint_target(0);
+	}
 	intr_init();
 	printk("ISR ready.\n");
 	x=0;
@@ -189,7 +193,7 @@ asmlink void spin_up(void)
 			;
 
 	}
-	halt();
-
+	//halt();
+	s.halt();
 }
 

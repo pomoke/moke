@@ -34,8 +34,8 @@ int strcmp(char *a,char *b)
 		}
 		else
 		{
-			*p++;
-			*q++;
+			p++;
+			q++;
 		}
 	}
 	if (p-a<q-b)
@@ -58,4 +58,61 @@ u32 strequ(char *a,char *b)
 			break;
 	}
 	return (*p==*q) ? 1 : 0 ; 
+}
+
+char *strstr(char * haystack, char * needle){
+    int haystack_len = strlen(haystack);
+    int ret=0;
+    int haystack_pos=0,needle_pos=0;
+    int needle_len = strlen(needle);
+    int move[27];
+    if (needle_len > haystack_len)
+    {
+	    return -1;
+    }
+    if (needle_len == 0 )
+    {
+	    return 0;
+    }
+    for (int i=0;i<26;i++)
+    {
+        move[i]=-1;
+    }
+    for (int i=needle_len-1;i>=0;i--)
+    {
+        if (move[needle[i]-'a']==-1)
+        {
+            move[needle[i]-'a']=needle_len-i;
+        }
+    }
+    for (int i=0;i<26;i++)
+	    if (move[i]==-1)
+		    move[i]=needle_len+1;
+    while (haystack_pos < haystack_len && haystack_pos + needle_len-1 < haystack_len)
+    {
+        needle_pos = 0;
+        while (needle_pos<needle_len && haystack_pos + needle_len-1  < haystack_len)
+        {
+            if (needle[needle_pos]!=haystack[haystack_pos+needle_pos])
+            {
+		if (haystack_pos+needle_len < haystack_len)
+		{
+                	haystack_pos += move[haystack[haystack_pos+needle_len]-'a'];
+	                break;
+		}
+		else goto end;
+            }
+            else
+            {
+                needle_pos++;
+            }
+        }
+        if (needle_pos==needle_len)
+        {
+            break;
+        }
+    }
+end:
+	ret = (needle_pos == needle_len) ? haystack_pos : -1;
+    return (ret == -1) ? (char *)0 : haystack_pos+ret;
 }

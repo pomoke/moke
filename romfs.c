@@ -1,5 +1,5 @@
 /*
- * A implementation of ROMFS.
+ * An implementation of ROMFS.
  *
  */
 #include <type.h>
@@ -20,11 +20,14 @@
 	((u32)(offset)+(u32)romfs_addr)
 
 #define HEADER(x) ((x)&0xfffffff8)
+
 #define TYPE(x) ((x)==0 ? "link" : (x)==1 ? "dir" : (x)==2 ? "file" :\
 	(x)==3 ? "symlink" : (x==4) ? "block" : (x)==5 ? "char" :\
 	(x)==6 ? "socket" : (x)==7 ? "fifo" : "?")
+
 #define FOLLOW_LINK(x) (be_32((x)->info))
-#define NEXT_HEADER(x) (((u32)(x)+be_32((x)->next)-1))
+//#define NEXT_HEADER(x) (((u32)(x)+be_32((x)->next&0xfffffff0)-1))
+#define NEXT_HEADER(x) (((be_32((x)->next))&0xfffffff0)+(u32)(romfs_addr))
 
 enum {
 	ROMFS_LINK=0,
@@ -57,8 +60,13 @@ struct superblock *romfs_addr;
 struct header *root_dir;
 u32 romfs_len;
 
-void romfs_dump_header(struct header *a)
+void romfs_dump_header(struct header *a,int depth)
 {
+	if (depth>15)
+	{
+		printk("FS recursion limit reached.Bailing out.\n");
+		return;
+	}
 	struct header *p;
 	printk("header +%d,next +%d,size %d,type %s,name %s\n",(u32)a-(u32)romfs_addr,HEADER(be_32(a->next)),be_32(a->size),TYPE(be_32((u32)a)&0x7),a->name);
 	switch (be_32(a->size) & 0x7)
@@ -67,18 +75,19 @@ void romfs_dump_header(struct header *a)
 			if (!strequ(a->name,".") && !(strequ(a->name,"..")))
 			{
 				p=ADDR(FOLLOW_LINK(a));
-				printk("link target: ");
-				romfs_dump_header(p);
-				break;
+				if (p != romfs_addr)
+				{
+					printk("link target: ");
+					romfs_dump_header(p,depth+1);
+				}
 			}
-			else
-			{
-				romfs_dump_header(NEXT_HEADER(a));
-			}
+			if (NEXT_HEADER(a) != romfs_addr)
+				romfs_dump_header(NEXT_HEADER(a),depth+1);
+			
 			break;
 		default:
-				;
-				//romfs_dump_header(NEXT_HEADER(a));
+			if (NEXT_HEADER(a) != romfs_addr)
+				romfs_dump_header(NEXT_HEADER(a),depth+1);
 	}
 }
 
@@ -98,12 +107,12 @@ int romfs_init(char *from,u32 len)
 		root_dir=(struct header *)((u32)romfs_addr+16+ALIGN(strlen(romfs_addr->label)));
 		printk("root_dir at %x,stlen(label)=%d\n",root_dir,strlen(romfs_addr->label));
 		printk("Reading root dir\n");
-		romfs_dump_header(root_dir);
+		romfs_dump_header(root_dir,0);
 		return 1;
 	}
 	else
 	{
-		printk("Not a romfs.\n");
+		printk("Not a Linux ROMFS.\n");
 		return 0;
 	}
 }

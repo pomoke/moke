@@ -7,6 +7,7 @@
  * 	struct some_entry *prev;
  * 	struct some_entry *next;
  * 	some_type value;
+ * 	...;
  * }
  *
  */
@@ -24,7 +25,7 @@
 	(a)->next=(item);\
 	(b)->prev=(item);\
 
-//#define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b->next ;b=b->next ) WRONG!
+//#define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b->next ;b=b->next ) WRONG
 #define FOR_ITEM(a,b) for ( typeof((a)) b=(a) ; b ;b=b->next )
 
 #define FOR_APPEND(a,b)\

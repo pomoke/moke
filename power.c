@@ -1,5 +1,6 @@
 #include "header/type.h"
 #include "header/io.h"
+#include <power.h>
 #include <intr.h>
 #include <link.h>
 void reboot()
@@ -48,3 +49,12 @@ void reboot_tflt(void)
 	asm volatile("int $80;":::);
 	return;
 } __attribute__((noreturn));
+
+struct power *power_init(struct power *p)
+{
+	p->get = 0;
+	p->power_off = poweroff_qemu;
+	p->reboot = reboot;
+	p->halt = halt;
+	p->set = 0;
+}

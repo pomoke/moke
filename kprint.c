@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #define PRINT_BUF_SIZE 512
 static char pbuf[PRINT_BUF_SIZE];
-static int kprint_target=1;
+static int kprint_target;
 static char hex[]="0123456789abcdef";
 void vprintk(char *fmt,va_list args)
 {
@@ -91,3 +91,7 @@ void printk(char *fmt,...)
 	return;
 }
 
+void set_kprint_target(int a)
+{
+	kprint_target = a;
+}

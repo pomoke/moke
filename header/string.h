@@ -20,3 +20,4 @@ inline void clear(void * dst,u32 n)
 u32 strlen(char *a);
 int strcmp(char *a,char *b);
 u32 strequ(char *a,char *b);
+char *strstr(char *haystack,char *needle);
