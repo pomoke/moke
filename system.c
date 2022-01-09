@@ -112,7 +112,7 @@ asmlink void spin_up(void)
 	}
 	else 
 	{
-		set_kprint_target(0);
+		set_kprint_target(1);
 	}
 	intr_init();
 	printk("ISR ready.\n");

@@ -28,6 +28,7 @@
 #define FOLLOW_LINK(x) (be_32((x)->info))
 //#define NEXT_HEADER(x) (((u32)(x)+be_32((x)->next&0xfffffff0)-1))
 #define NEXT_HEADER(x) (((be_32((x)->next))&0xfffffff0)+(u32)(romfs_addr))
+#define HEADER_BY_OFFSET(x) (((x)&0xfffffff0)+(u32)(romfs_addr))
 
 enum {
 	ROMFS_LINK=0,
@@ -62,32 +63,44 @@ u32 romfs_len;
 
 void romfs_dump_header(struct header *a,int depth)
 {
-	if (depth>15)
+	if (depth>31)
 	{
 		printk("FS recursion limit reached.Bailing out.\n");
 		return;
 	}
 	struct header *p;
-	printk("header +%d,next +%d,size %d,type %s,name %s\n",(u32)a-(u32)romfs_addr,HEADER(be_32(a->next)),be_32(a->size),TYPE(be_32((u32)a)&0x7),a->name);
-	switch (be_32(a->size) & 0x7)
+	//printk("header +%d,next +%d,size %d,type %s,name %s\n",(u32)a-(u32)romfs_addr,HEADER(be_32(a->next)),be_32(a->size),TYPE(be_32((u32)a)&0x7),a->name);
+	//Should be iterative here.	
+	for (p=a;p!=romfs_addr;)
 	{
-		case ROMFS_LINK:
-			if (!strequ(a->name,".") && !(strequ(a->name,"..")))
-			{
-				p=ADDR(FOLLOW_LINK(a));
-				if (p != romfs_addr)
+		printk("header +%d,next +%d,size %d,type %s,name %s\n",(u32)p-(u32)romfs_addr,HEADER(be_32(p->next)),be_32(p->size),TYPE(be_32(p->next)&0x7),p->name);
+		switch (be_32(p->next) & 0x7) //Check attribute bit.
+		{ //TODO: Treat ROMFS_DIR properly,aside from ROMFS_LINK.
+			case ROMFS_LINK:
+				if (!strequ(p->name,".") && !(strequ(p->name,"..")))
 				{
-					printk("link target: ");
-					romfs_dump_header(p,depth+1);
+					p=ADDR(FOLLOW_LINK(p));
+					if (p != romfs_addr)
+					{
+						romfs_dump_header(p,depth+1);
+					}
 				}
-			}
-			if (NEXT_HEADER(a) != romfs_addr)
-				romfs_dump_header(NEXT_HEADER(a),depth+1);
-			
-			break;
-		default:
-			if (NEXT_HEADER(a) != romfs_addr)
-				romfs_dump_header(NEXT_HEADER(a),depth+1);
+				else
+				{
+					;
+				}
+				break;
+			case ROMFS_DIR:
+				//Check into.
+				romfs_dump_header(HEADER_BY_OFFSET(be_32(p->info)),depth+1);
+				break;
+			default:
+				//if (NEXT_HEADER(p) != romfs_addr)	
+				//romfs_dump_header(NEXT_HEADER(p),depth+1);
+				break;
+		}
+		p=NEXT_HEADER(p);
+		printk("next header at %x\n",p);
 	}
 }
 
