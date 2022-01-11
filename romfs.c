@@ -12,7 +12,14 @@
 #define ROMFS_MAGIC_1 0x6d6f722d
 #define ROMFS_MAGIC_2 0x2d736631
 
-
+struct romfs {
+	int type;
+	u32 len;
+	union {
+		struct superblock *p; //0
+		int dev_node; //1
+	};
+};
 
 //This macro calculate the result of alignment. x: bits
 #define ALIGN(x) ( ((x)&0xfffffff0) + 16*(!!((x)&&0xf)) )
@@ -60,7 +67,6 @@ struct header {
 struct superblock *romfs_addr;
 struct header *root_dir;
 u32 romfs_len;
-
 void romfs_dump_header(struct header *a,int depth)
 {
 	if (depth>31)
@@ -117,17 +123,49 @@ int romfs_init(char *from,u32 len)
 		//Print info about this fs.
 		printk("romfs: size %d,label %s\n",be_32(romfs_addr->size),romfs_addr->label);
 		//Set '/'
+		printk("romfs: checksum %s.\n",romfs_checksum(romfs_addr,romfs_addr->size >= 512 ? 512 : romfs_addr->size) ? "Bad" : "OK");
 		root_dir=(struct header *)((u32)romfs_addr+16+ALIGN(strlen(romfs_addr->label)));
 		printk("root_dir at %x,stlen(label)=%d\n",root_dir,strlen(romfs_addr->label));
 		printk("Reading root dir\n");
-		romfs_dump_header(root_dir,0);
+		//romfs_dump_header(root_dir,0);
 		return 1;
 	}
 	else
 	{
-		printk("Not a Linux ROMFS.\n");
+		printk("This is not a valid Linux ROMFS.\n");
 		return 0;
 	}
 }
+int romfs_checksum(struct superblock *from,int size)
+{
+	/*
+	See fs/romfs/super.c .Checksum was not explained detailed in doc.
+	Only 0 indicates OK.
+	*/
+	u32 *p = (u32 *)from;
+	u32 sum = 0;
 
+	size >>= 2;
+	while (size>0)
+	{
+		sum += be_32(*p); //Pitfull: Avoid using self-inc/decrement in macros.
+		p++;
+		size--;
+	}
+	return sum;
+}
 
+int romfs_open_mem(struct superblock *from,int len,struct romfs *p)
+{
+	//Check if this is a ROMFS.
+	if (!(*(u32 *)from==ROMFS_MAGIC_1 && *(((u32 *)from)+1)==ROMFS_MAGIC_2))
+	{
+		printk("This is not a valid Linux ROMFS.\n");
+		return 0;
+	}
+	p->type = 0;
+	BUG_ON(len!=from->size);
+	p->len = from->size;
+	p->p = from;
+	return 1;
+}

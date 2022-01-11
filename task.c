@@ -1,8 +1,8 @@
 #include <type.h>
-#include <paging.h>
+#include <page.h>
 
 struct task {
-	struct ;
+	struct test;
 	struct cred cred;
 	struct mem mem;
 }
