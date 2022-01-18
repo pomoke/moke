@@ -10,6 +10,8 @@ struct int_frame {
 	u32 eflags;
 };
 
+/* There should be non-bitfield implementation*/
+
 struct pde {
 	u32 present:1;
 	u32 write:1;

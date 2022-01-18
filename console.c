@@ -19,7 +19,7 @@ struct console {
     struct console *next;
 };
 
-static struct console *console_in,*console_out;
+struct console *console_in,*console_out;
 
 void console_set_out(struct console *con)
 {
@@ -35,3 +35,5 @@ void console_set(struct console *con)
     console_set_out(con);
     console_set_in(con);
 }
+
+int vgacon_default_con_init(void);

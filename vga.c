@@ -13,7 +13,9 @@
 #define VGA_IO_HIGH 0xe
 #define VGA_IO_LOW 0xf
 int pos_x=0,pos_y=0;
-
+/*
+* Virtual Console will be seperated out to termainal.c
+*/
 void vga_cursor(u32 x,u32 y)
 {
 	outb(VGA_CMD_PORT,VGA_IO_HIGH);
@@ -79,3 +81,37 @@ void kprint_vga(char * str,u8 fg,u8 bg)
 	vga_cursor(pos_x,pos_y);
 	return;
 }
+
+void kprintn_vga(char * str,u32 len,u8 fg,u8 bg)
+{
+	char *p=str;
+	while (len)
+	{
+		if (*p=='\n')
+		{
+			pos_y++;
+			pos_x=0;
+		}
+		else 
+		{
+			vga_write(pos_x,pos_y,*p,((bg&0x0f)<<4|(fg&0x0f)));
+			pos_x++;
+		}
+		if (pos_x>=VGA_WIDTH)
+		{
+			pos_x=0;
+			pos_y++;
+		}
+		if (pos_y>=VGA_HEIGHT)
+		{
+			pos_y=24;
+			pos_x=0;
+			vga_scroll();
+		}
+		p++;
+		len--;
+	}
+	vga_cursor(pos_x,pos_y);
+	return;
+}
+

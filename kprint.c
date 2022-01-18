@@ -2,6 +2,8 @@
 #include <io.h>
 #include <kprint.h>
 #include <stdarg.h>
+#include <console.h>
+
 #define PRINT_BUF_SIZE 512
 static char pbuf[PRINT_BUF_SIZE];
 static int kprint_target;
@@ -15,6 +17,8 @@ void vprintk(char *fmt,va_list args)
 	char ibuf[11];
 	i32 itmp;
 	u32 tmp;
+	i64 i64tmp;
+	u64 u64tmp;
 	while (*p)
 	{
 		if (flag==1)
@@ -85,20 +89,28 @@ void vprintk(char *fmt,va_list args)
 		p++;
 	}
 	*q='\0';
-	if (kprint_target==0)
-		kprint(pbuf,PR_VGA,KERN);
+	
+	if (console_out) //When console module was properly inited.
+	{
+		console_out->console_write_str(console_out,pbuf);
+	}
 	else
 	{
-		char *ptr=pbuf;
-		while (*ptr)
-			if (*ptr!='\n')
-				serial_write(0x3f8,*ptr++);
-			else
-			{
-				serial_write(0x3f8,'\r');
-				serial_write(0x3f8,'\n');
-				ptr++;
-			}
+		if (kprint_target==0)
+			kprint(pbuf,PR_VGA,KERN);
+		else
+		{
+			char *ptr=pbuf;
+			while (*ptr)
+				if (*ptr!='\n')
+					serial_write(0x3f8,*ptr++);
+				else
+				{
+					serial_write(0x3f8,'\r');
+					serial_write(0x3f8,'\n');
+					ptr++;
+				}
+		}
 	}
 	return;
 }

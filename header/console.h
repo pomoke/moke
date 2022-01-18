@@ -15,7 +15,7 @@ struct console {
     struct console *next;
 };
 
-static struct console *console_in,*console_out;
+extern struct console *console_in,*console_out;
 
 void console_set_out(struct console *con);
 void console_set_in(struct console *con);

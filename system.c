@@ -10,6 +10,7 @@
 #include <serial.h>
 #include <string.h>
 #include <mem.h>
+#include <console.h>
 extern int boottype;
 asmlink i32 sum(i32 a,i32 b,i32 c)
 {
@@ -80,6 +81,7 @@ asmlink void spin_up(void)
 		printk("Error:not booted by multiboot1 loader!\nSystem halted.");
 		for (;;) ;
 	}
+	vgacon_default_con_init();
 	struct power s;
 	power_init(&s);
 	printk("Conforming to multiboot standard\n");
@@ -176,6 +178,7 @@ asmlink void spin_up(void)
 	//printk("%d\n",x/x);	
 	//clock_now();
 	printk("0xc0100000->%x\n",get_physical(0xc0100000));
+	printk("Negative number test:%d\n",-20);
 	show_kernel_zone();
 	for (int i=0;i<1000000;i++)
 	{

@@ -1,4 +1,5 @@
 /*
+ *
  * An implementation of ROMFS.
  *
  */
@@ -8,6 +9,8 @@
 #include <page.h>
 #include <string.h>
 #include <kprint.h>
+#include <vfs.h>
+#include <mem.h>
 
 #define ROMFS_MAGIC_1 0x6d6f722d
 #define ROMFS_MAGIC_2 0x2d736631
@@ -67,6 +70,8 @@ struct header {
 struct superblock *romfs_addr;
 struct header *root_dir;
 u32 romfs_len;
+int romfs_checksum(struct superblock *from,int size);
+
 void romfs_dump_header(struct header *a,int depth)
 {
 	if (depth>31)
@@ -81,12 +86,13 @@ void romfs_dump_header(struct header *a,int depth)
 	{
 		printk("header +%d,next +%d,size %d,type %s,name %s\n",(u32)p-(u32)romfs_addr,HEADER(be_32(p->next)),be_32(p->size),TYPE(be_32(p->next)&0x7),p->name);
 		switch (be_32(p->next) & 0x7) //Check attribute bit.
-		{ //TODO: Treat ROMFS_DIR properly,aside from ROMFS_LINK.
+		{ 
+			//TODO: should handle ROMFS_SYMBOL. 
 			case ROMFS_LINK:
 				if (!strequ(p->name,".") && !(strequ(p->name,"..")))
 				{
 					p=ADDR(FOLLOW_LINK(p));
-					if (p != romfs_addr)
+					if (p != (struct header *)romfs_addr)
 					{
 						romfs_dump_header(p,depth+1);
 					}
@@ -117,7 +123,7 @@ int romfs_init(char *from,u32 len)
 	printk("ALIGN(20)=%d\n",ALIGN(20));
 	if (*(u32 *)from==ROMFS_MAGIC_1 && *(((u32 *)from)+1)==ROMFS_MAGIC_2)
 	{
-		romfs_addr=from;
+		romfs_addr=(struct superblock *)from;
 		romfs_len=len;
 		printk("romfs: Found romfs at %x\n",romfs_addr);
 		//Print info about this fs.
@@ -139,7 +145,10 @@ int romfs_init(char *from,u32 len)
 int romfs_checksum(struct superblock *from,int size)
 {
 	/*
-	See fs/romfs/super.c .Checksum was not explained detailed in doc.
+	See linux kernel fs/romfs/super.c .Checksum was not explained detailed in doc.
+	First 512 or size bytes,which is shorter,will be used to calculate checksum.
+	Add all u32 words up,and check if the sum is 0.
+
 	Only 0 indicates OK.
 	*/
 	u32 *p = (u32 *)from;
@@ -155,12 +164,17 @@ int romfs_checksum(struct superblock *from,int size)
 	return sum;
 }
 
-int romfs_open_mem(struct superblock *from,int len,struct romfs *p)
+int romfs_open_mem(struct superblock *from,u32 len,struct romfs *p)
 {
 	//Check if this is a ROMFS.
 	if (!(*(u32 *)from==ROMFS_MAGIC_1 && *(((u32 *)from)+1)==ROMFS_MAGIC_2))
 	{
-		printk("This is not a valid Linux ROMFS.\n");
+		printk("romfs: This is not a valid Linux ROMFS.\n");
+		return 0;
+	}
+	if (romfs_checksum(from,len<512?len:512))
+	{
+		printk("romfs: ROMFS checksum BAD.");
 		return 0;
 	}
 	p->type = 0;
@@ -168,4 +182,21 @@ int romfs_open_mem(struct superblock *from,int len,struct romfs *p)
 	p->len = from->size;
 	p->p = from;
 	return 1;
+}
+
+struct mount *mount_romfs_mem(char *from,u32 len,struct mount *m)
+{
+	struct romfs *control = kalloc(sizeof(struct romfs),0);
+
+	if (!romfs_open_mem(from,len,control))
+	{
+		return 0;
+	}
+
+	//Path is filled by caller. FS driver does not need to know about mountpoint.
+	m->flag = 0;
+	m->backend.type = BACKEND_MEM;
+	m->config = control;
+
+	return m;
 }

@@ -9,3 +9,5 @@ typedef int i32;
 typedef long long i64;
 
 typedef int native;
+
+#define NULL ((void *)0)

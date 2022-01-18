@@ -27,9 +27,8 @@ struct time_spec time_add(struct time_spec *a,struct time_spec *b);
 struct time_spec *timer_create(void);
 
 int timer_set(struct timer *t,struct time_spec *time,void (*func)(void));
-int periodical_set(struct timer *t,struct time_spec *interval,void (*func)(void))
+int periodical_set(struct timer *t,struct time_spec *interval,void (*func)(void));
 int timer_at(struct timer *t,struct time_spec *time,void (*func)(void));
-int timer_stop(struct timer *t);
 int timer_stop(struct timer *t);
 int timer_del(struct timer *t);
 
